@@ -649,3 +649,10 @@ ai-resume/
 | 28 | Mobile | font-display: swap | Inter blocks render on slow 3G without it |
 | 29 | Mobile | dvh/svh JS fallback | iOS Safari 26+ changed viewport behavior |
 | 30 | Mobile | Share via Web Share API | Native share sheet > clipboard only |
+
+---
+
+## Next Steps
+
+1. **`/design-consultation`** — Create DESIGN.md formalizing the Linear-inspired design system as the project's design source of truth. The tokens live in this spec but need a proper design system doc with usage guidelines.
+2. **Implement** — Build from spec.md. Tasks 1-12 in PLAN.md, in order.
