@@ -336,6 +336,10 @@
       inputEl.value = "";
       inputEl.style.height = "auto";
 
+      // Remove suggestion chips on first send
+      const chips = messagesEl.querySelector(".suggestions");
+      if (chips) chips.remove();
+
       addMessage("user", text);
       history.push({ role: "user", content: text });
 
