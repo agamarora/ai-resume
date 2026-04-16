@@ -25,6 +25,7 @@ try {
 }
 
 const MAX_INPUT_LENGTH = 200;
+const MAX_HISTORY_MSG_LENGTH = 500;
 const MAX_COMPLETION_TOKENS = 100;
 
 const MODELS = [
@@ -42,7 +43,10 @@ const ALLOWED_ORIGINS = new Set([
 function isOriginAllowed(origin) {
   if (!origin) return true; // Same-origin requests (Samsung Internet strips Origin header)
   if (ALLOWED_ORIGINS.has(origin)) return true;
-  if (origin.startsWith("http://localhost")) return true;
+  try {
+    const hostname = new URL(origin).hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") return true;
+  } catch { /* invalid origin */ }
   return false;
 }
 
@@ -99,7 +103,8 @@ export default async function handler(req) {
     const history = Array.isArray(body.history) ? body.history.slice(-6) : [];
     for (const msg of history) {
       if (msg.role === "user" || msg.role === "assistant") {
-        const content = String(msg.content || "").slice(0, MAX_INPUT_LENGTH);
+        const limit = msg.role === "assistant" ? MAX_HISTORY_MSG_LENGTH : MAX_INPUT_LENGTH;
+        const content = String(msg.content || "").slice(0, limit);
         if (content && (msg.role === "assistant" || !isInjectionAttempt(content))) {
           messages.push({ role: msg.role, content });
         }

@@ -12,9 +12,6 @@
   <meta name="twitter:title" content="{{PAGE_TITLE}}">
   <meta name="twitter:description" content="{{META_DESCRIPTION}}">
   <style>
-    /* TODO: Task 3 — Build full chat UI. This is a placeholder. */
-    /* See PLAN.md Task 3 for complete spec: mobile patterns, streaming, message bubbles */
-
     :root {
       --bg: {{CSS_BG}};
       --border: {{CSS_BORDER}};
@@ -76,6 +73,12 @@
       font-size: 15px;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .message.assistant {
@@ -87,7 +90,46 @@
     .message.user {
       align-self: flex-end;
       background: var(--accent);
-      color: var(--bg);
+      color: var(--accent-fg, var(--bg));
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 4px 0;
+    }
+
+    .suggestion-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .retry-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .retry-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
     }
 
     .message .cursor {
@@ -164,11 +206,9 @@
       opacity: 0.85;
     }
 
-    .thinking {
+    .thinking-state {
       color: var(--text-dim);
       font-style: italic;
-      font-size: 14px;
-      padding: 8px 0;
     }
 
     @media (max-width: 768px) {
@@ -184,7 +224,7 @@
     <h1>{{HERO_NAME}}</h1>
   </header>
 
-  <main class="message-list" id="messages">
+  <main class="message-list" id="messages" aria-live="polite">
     <!-- Welcome message inserted by JS -->
   </main>
 
@@ -206,11 +246,13 @@
     const MAX_HISTORY = 6;
     const STREAM_THROTTLE_MS = 30;
     const REQUEST_TIMEOUT_MS = 15000;
+    const SEND_COOLDOWN_MS = 2000;
 
     // === STATE ===
     const history = [];
     let isStreaming = false;
     let abortController = null;
+    let lastSendTime = 0;
 
     // === DOM ===
     const messagesEl = document.getElementById("messages");
@@ -271,16 +313,23 @@
     function addStreamingMessage() {
       const div = document.createElement("div");
       div.className = "message assistant";
-      div.innerHTML = '<span class="cursor"></span>';
+      const textNode = document.createTextNode("");
+      const cursor = document.createElement("span");
+      cursor.className = "cursor";
+      div.appendChild(textNode);
+      div.appendChild(cursor);
       messagesEl.appendChild(div);
       scrollToBottom();
-      return div;
+      return { el: div, textNode, cursor };
     }
 
     // === STREAMING (30ms throttle from Ultralytics pattern) ===
     async function sendMessage() {
       const text = inputEl.value.trim();
       if (!text || isStreaming) return;
+      const now = Date.now();
+      if (now - lastSendTime < SEND_COOLDOWN_MS) return;
+      lastSendTime = now;
 
       isStreaming = true;
       sendBtn.disabled = true;
@@ -290,14 +339,14 @@
       addMessage("user", text);
       history.push({ role: "user", content: text });
 
-      const msgEl = addStreamingMessage();
+      const msg = addStreamingMessage();
       let accumulated = "";
       let renderTimer = null;
 
       const scheduleRender = () => {
         if (renderTimer) return;
         renderTimer = setTimeout(() => {
-          msgEl.innerHTML = accumulated + '<span class="cursor"></span>';
+          msg.textNode.textContent = accumulated;
           scrollToBottom();
           renderTimer = null;
         }, STREAM_THROTTLE_MS);
@@ -306,7 +355,8 @@
       // "Still thinking..." timeout
       const thinkingTimer = setTimeout(() => {
         if (!accumulated) {
-          msgEl.innerHTML = '<span class="thinking">still thinking...</span><span class="cursor"></span>';
+          msg.textNode.textContent = "still thinking...";
+          msg.el.classList.add("thinking-state");
         }
       }, 5000);
 
@@ -330,13 +380,16 @@
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+        let lineBuf = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          for (const line of chunk.split("\n")) {
+          lineBuf += decoder.decode(value, { stream: true });
+          const lines = lineBuf.split("\n");
+          lineBuf = lines.pop(); // keep incomplete trailing line in buffer
+          for (const line of lines) {
             if (!line.startsWith("data: ")) continue;
             const data = line.slice(6);
             if (data === "[DONE]") continue;
@@ -367,7 +420,24 @@
       if (renderTimer) clearTimeout(renderTimer);
 
       // Final render without cursor
-      msgEl.textContent = accumulated;
+      msg.textNode.textContent = accumulated;
+      msg.el.classList.remove("thinking-state");
+      if (msg.cursor.parentNode) msg.cursor.remove();
+
+      // Add retry button on error responses
+      if (accumulated.includes("try again?") || accumulated.includes("went wrong")) {
+        const retryBtn = document.createElement("button");
+        retryBtn.className = "retry-btn";
+        retryBtn.textContent = "Retry";
+        retryBtn.addEventListener("click", () => {
+          msg.el.remove();
+          history.pop(); // remove failed user message
+          inputEl.value = text;
+          sendMessage();
+        });
+        msg.el.appendChild(retryBtn);
+      }
+
       history.push({ role: "assistant", content: accumulated });
 
       // Trim history
@@ -381,6 +451,25 @@
 
     // === INIT ===
     addMessage("assistant", WELCOME);
+
+    // Suggestion chips below welcome message
+    if (AUTO_QUESTIONS.length > 0) {
+      const chipContainer = document.createElement("div");
+      chipContainer.className = "suggestions";
+      AUTO_QUESTIONS.slice(0, 3).forEach(q => {
+        const chip = document.createElement("button");
+        chip.className = "suggestion-chip";
+        chip.textContent = q;
+        chip.addEventListener("click", () => {
+          inputEl.value = q;
+          chipContainer.remove();
+          sendMessage();
+        });
+        chipContainer.appendChild(chip);
+      });
+      messagesEl.appendChild(chipContainer);
+      scrollToBottom();
+    }
 
     // Auto-type placeholder rotation
     let questionIdx = 0;

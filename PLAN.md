@@ -1,3 +1,4 @@
+<!-- /autoplan restore point: /c/Users/Agam/.gstack/projects/agamarora-ai-resume/main-autoplan-restore-20260416-142727.md -->
 # ai-resume — Final Implementation Plan
 
 ## Context
@@ -498,13 +499,50 @@ FOOTER: Built by Agam Arora · Open source · MIT
 | `D:\AA\agamarora\resume.md` | Resume structure |
 | `D:\AA\agamarora\DESIGN.md` | Design tokens for landing page |
 
+<!-- AUTONOMOUS DECISION LOG -->
+## Decision Audit Trail
+
+| # | Phase | Decision | Classification | Principle | Rationale | Rejected |
+|---|-------|----------|---------------|-----------|-----------|----------|
+| 1 | CEO | Mode: SELECTIVE EXPANSION | Mechanical | P2 | Plan already reviewed 4x, scope is solid | EXPANSION, HOLD, REDUCTION |
+| 2 | CEO | Approach B (full plan minus landing page) | Mechanical | P1+P3 | Validates core thesis. Task 10 is marketing. | Approach A (too minimal), C (cross-repo dep) |
+| 3 | CEO | No expansions accepted | Mechanical | P3+P4 | All candidates are oceans or duplications | Dark mode, analytics, multi-lang, hosted |
+| 4 | CEO | Premises accepted | Mechanical | P6 | Valid foundations, "3 inputs" is marketing-accurate | — |
+| 5 | Design | Add suggestion chips | Mechanical | P1 | Placeholder rotation too subtle, < 30 LOC | — |
+| 6 | Design | Add retry button on errors | Mechanical | P1 | Plan says it, code doesn't implement it | — |
+| 7 | Design | Show typing indicator immediately | Mechanical | P1 | 5s dead silence loses users | — |
+| 8 | Design | Keep textContent (no markdown) | TASTE | P5 | XSS safety > formatting. Responses are 30 words. | innerHTML + sanitizer |
+| 9 | Design | Add deriveForegroundColor | Mechanical | P1 | User bubble text unsafe on light custom palettes | — |
+| 10 | Design | Add aria-live on message-list | Mechanical | P1 | Screen reader accessibility | — |
+| 11 | Design | Add message fade-in animation | Mechanical | P1 | 5 lines CSS, reduces static feel | — |
+| 12 | Design | Remove stale TODO in index.html:15 | Mechanical | P5 | Contradicts actual state of code | — |
+| 13 | Eng | FIX XSS in streaming innerHTML | Mechanical | Security | Critical: model output injected via innerHTML during streaming | — |
+| 14 | Eng | Fix localhost CORS bypass | Mechanical | P1 | `http://localhost.evil.com` passes check | — |
+| 15 | Eng | Separate assistant history msg length | Mechanical | P1 | 200-char truncation breaks follow-up context | — |
+| 16 | Eng | Fix SSE chunk splitting | Mechanical | P1 | TCP fragmentation drops tokens | — |
+| 17 | Eng | Add client-side send cooldown | Mechanical | P1 | Prevents Groq rate limit exhaustion | — |
+| 18 | Eng | Integration tests deferred to TODOS | Mechanical | P3 | Behavioral tests are v1 priority | — |
+| 19 | DX | Pre-hydrate index.html with demo values | TASTE | P1 | TTHW drops from 30 min to 2 min | Blank template until setup.js |
+| 20 | DX | Add manual setup path in README | Mechanical | P1 | Not everyone has Claude Code | — |
+| 21 | DX | Add eval script to package.json | Mechanical | P5 | Undocumented invocation | — |
+| 22 | DX | Defer configurable limits to TODOS | Mechanical | P3 | Pragmatic for v1, env vars in v2 | — |
+| 23 | DX | Defer partial palette overrides to TODOS | Mechanical | P3 | Custom palette path works for v1 | — |
+
+## Cross-Phase Themes
+
+**Theme: Instant gratification / TTHW** — flagged in Phase 2 (missing first-visit context) and Phase 3.5 (no instant gratification path). High-confidence signal. The template should work out of the box with demo values.
+
+**Theme: XSS / content safety** — flagged in Phase 2 (textContent vs innerHTML) and Phase 3 (innerHTML during streaming). The streaming path uses innerHTML unsafely while the final render is safe. Must fix.
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
-| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR | 8 proposals, 5 accepted, 1 deferred |
-| Eng Review | `/plan-eng-review` | Architecture & tests | 1 | CLEAR | 5 error gaps, 0 critical |
-| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR | score: 5/10 → 8/10, 6 decisions |
-| Adversarial Review | 3 subagents | Product + technical + UX | 1 | ISSUES ADDRESSED | 12 critical findings, all resolved in plan |
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 2 | CLEAR | Mode: SELECTIVE EXPANSION. No expansions. Task 10 deferred. |
+| Eng Review | `/plan-eng-review` | Architecture & tests | 2 | ISSUES_OPEN | 1 critical (XSS streaming), 4 high (CORS, history, SSE, rate limit) |
+| Design Review | `/plan-design-review` | UI/UX gaps | 2 | ISSUES_OPEN | score: 7/10, 8 findings (suggestion chips, retry btn, typing indicator) |
+| DX Review | `/plan-devex-review` | Developer experience | 1 | ISSUES_OPEN | score: 5.7/10, TTHW: 30min→2min with pre-hydrated demo |
+| Adversarial Review | 3 subagents (prior) | Product + technical + UX | 1 | ISSUES ADDRESSED | 12 critical findings, all resolved |
+| Autoplan Voices | Claude subagent | Independent review x4 phases | 1 | FLAGGED | Codex unavailable (auth expired). Subagent-only across all phases. |
 
-**VERDICT:** ALL REVIEWS CLEARED — ready to implement.
+**VERDICT:** 1 CRITICAL (XSS in streaming innerHTML) + 4 HIGH issues must be addressed before shipping. See Decision Audit Trail for full breakdown.

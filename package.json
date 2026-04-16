@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "AI-powered interactive resume. Clone, run Claude Code, deploy.",
   "type": "module",
+  "scripts": {
+    "setup": "node setup.js",
+    "eval": "node eval-prompt.mjs"
+  },
   "dependencies": {
     "groq-sdk": "^1.1.2"
   }

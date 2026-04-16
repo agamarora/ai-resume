@@ -85,6 +85,7 @@ export function derivePaletteVars(palette) {
     "--text": text,
     "--text-dim": textDim,
     "--accent": accent,
+    "--accent-fg": deriveForegroundColor(accent),
     "--surface": surface,
 
     // Accent rgba variants (used in chat UI, keyboard, terminal effects)
@@ -103,6 +104,16 @@ export function derivePaletteVars(palette) {
     "--key-border": lighten(bg, 32),
     "--key-border-bottom": lighten(bg, 24),
   };
+}
+
+/**
+ * Derive the best foreground color (white or black) for text on a given background.
+ * Uses relative luminance to pick the option with better contrast.
+ */
+export function deriveForegroundColor(bgHex) {
+  const { r, g, b } = hexToRgb(bgHex);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? "#000000" : "#FFFFFF";
 }
 
 /**
