@@ -1,110 +1,115 @@
 # ai-resume
 
-Your resume, alive. An AI that answers questions about your career, deployed for free.
+Your resume, alive. A personal AI agent page for job seekers.
 
-Visitors chat with an AI version of you. It knows your work history, speaks in your voice, and deflects off-topic questions. Built with vanilla HTML/CSS/JS, Groq (free tier), and Netlify (free tier). Zero framework, zero build step, $0/month.
+> **Status: Building in public.** Spec finalized, reviews cleared, implementation next. See [spec.md](spec.md) for the full design.
 
-## Set up with Claude Code — 30 minutes
+## What this is
 
-**Requirements:** [Node.js 18+](https://nodejs.org/), a [Groq API key](https://console.groq.com/keys) (free), a [Netlify account](https://app.netlify.com) (free), [Netlify CLI](https://docs.netlify.com/cli/get-started/) (`npm i -g netlify-cli`)
+A chat-first personal page where recruiters talk to an AI that knows your career. Not a chatbot slapped onto a portfolio — the chat IS the landing page. Proof cards show your strongest impacts at a glance. A machine-readable endpoint lets recruiter AI agents query your career data.
 
-### Step 1: Create your repo
+**For job seekers:** Paste your resume into any AI assistant (Claude Code, ChatGPT, Codex). Minutes later, you have a live AI agent page. Setup takes one prompt.
 
-Click **"Use this template"** on GitHub. Clone your new repo.
+**For recruiters:** Click a link, see proof cards (quantified career impacts), ask anything, connect. The 6-second first impression is built in.
 
-### Step 2: Open Claude Code and paste this
+**For recruiter AI agents:** Query `/.well-known/ai-resume.json` for structured Schema.org Person data, skills, availability, and a chat endpoint.
 
-> Set up my AI resume. Walk me through: writing my resume, generating the AI personality, choosing a color palette, configuring the site, setting my Groq API key, testing locally, and deploying to Netlify. Take it step by step.
-
-Claude Code reads the `CLAUDE.md` in this repo and becomes your setup wizard. It will:
-- Ask about your career and write `resume.md`
-- Generate `system-prompt.md` (the AI's personality and knowledge)
-- Collect your name, palette choice, and domain
-- Run `node setup.js` to apply your config
-- Help you test locally and deploy
-
-### Step 3: Done
-
-Your AI resume is live. Share the URL.
-
-## Set up manually — no Claude Code needed
-
-```bash
-git clone https://github.com/<you>/ai-resume.git && cd ai-resume && npm install
-```
-
-1. Edit `resume.md` with your career data
-2. Edit `system-prompt.md` — replace "Alex Chen" / "Senior Product Designer" with your name and facts
-3. Create `setup-config.json`:
-```json
-{
-  "name": "Your Name",
-  "title": "Your Title",
-  "palette": "midnight-gold",
-  "domain": "yourname.netlify.app",
-  "initials": "yn",
-  "welcome_message": "hey! ask me anything about my career.",
-  "placeholder_text": "Ask me about...",
-  "auto_type_questions": ["what do you do?", "why should I hire you?", "what have you shipped?"]
-}
-```
-4. Run `node setup.js`
-5. Create `.env` with `GROQ_API_KEY=gsk_your_key_here`
-6. Test: `netlify dev` → open http://localhost:8888
-7. Deploy: `netlify login && netlify init && netlify env:set GROQ_API_KEY <key> && netlify deploy --prod`
-
-## Palettes
-
-| Palette | Description |
-|---------|-------------|
-| `midnight-gold` | Dark editorial with warm gold accents |
-| `deep-ocean` | Navy depths with electric cyan highlights |
-| `obsidian-rose` | Cool charcoal with dusty rose warmth |
-| `slate-mint` | Cool slate with fresh mint energy |
-| `custom` | Your own 5 hex colors — validated for WCAG AA contrast |
-
-## How it works
+## How it looks
 
 ```
-resume.md → system-prompt.md → groqHandler.mjs → streaming AI responses
-                                                        ↓
-setup-config.json → setup.js → index.html ←──────── Chat UI
+┌─ Header ────────────────────────────┐
+│ ac. Alex Chen             [in] [✉]  │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─ Card ─────┐ ┌─ Card ─────┐      │
+│ │ Figma      │ │ Stripe     │      │
+│ │ 400+ teams │ │ +12% conv  │      │
+│ │ [Ask] [→]  │ │ [Ask] [→]  │      │
+│ └────────────┘ └────────────┘      │
+│                                     │
+│ ask me anything about Alex's        │
+│ career.                             │
+│                                     │
+│ [what does Alex do?] [why hire?]    │
+│                                     │
+├─────────────────────────────────────┤
+│ [Ask me about Alex...       ] [↑]   │
+└─────────────────────────────────────┘
 ```
 
-**index.html** — Single-file chat interface. Message bubbles, suggestion chips, streaming with cursor animation, mobile keyboard handling. Zero external dependencies.
+Proof cards first. Greeting below. Suggestion chips. Then conversation.
 
-**groqHandler.mjs** — Netlify serverless function. Reads your system prompt at cold start, streams responses via SSE. Cascades through 4 Groq models if one hits rate limits. Includes prompt injection filtering.
+## Design
 
-**setup.js** — Reads your config, replaces template placeholders across all files. Atomic writes, validates no placeholders remain. Re-runnable.
+Linear-inspired design system. Inter font, 8px grid, tight border-radius, dark palettes, 150ms transitions. Four curated palettes + custom. WCAG AA validated.
 
-**palettes.js** — Color system with derived RGBA variants and WCAG AA contrast validation.
+| Palette | Vibe |
+|---------|------|
+| `midnight-gold` | Dark editorial, warm gold accents |
+| `deep-ocean` | Navy depths, electric cyan highlights |
+| `obsidian-rose` | Cool charcoal, dusty rose warmth |
+| `slate-mint` | Cool slate, fresh mint energy |
 
-## Customization
+## Architecture
 
-| Change | Edit | Then |
-|--------|------|------|
-| Resume content | `resume.md` | Regenerate `system-prompt.md` |
-| AI personality | `system-prompt.md` | Redeploy |
-| Colors/name/domain | `setup-config.json` | Run `node setup.js`, redeploy |
-| Custom palette | Add `"palette": "custom"` and `"custom_palette": {...}` to config | Run `node setup.js` |
-
-## Running tests
-
-```bash
-npm run eval
+```
+resume.md ──[Any AI assistant]──→ system-prompt.md
+                                → setup-config.json (highlights, skills, links)
+                                → setup.js → index.html (chat + cards + JSON-LD)
+                                           → ai-resume.json (agent endpoint)
+                                           → manifest.json (PWA)
 ```
 
-10 behavioral tests: greeting tone, identity awareness, hiring signal (checks for metrics), off-topic deflection, prompt injection resistance, and follow-up context. Requires `.env` with `GROQ_API_KEY`.
+- **index.html** — Single-file chat UI. Zero deps. Mobile-first. Proof cards, streaming SSE, skeleton loading.
+- **groqHandler.mjs** — Netlify function. 4-model cascade, injection filter, SSE streaming.
+- **setup.js** — Config-driven multi-file generator. Cards, JSON-LD, PWA manifest, OG tags. Atomic writes.
+- **ai-resume.json** — Schema.org Person endpoint for agent-to-agent communication.
 
-## FAQ
+## Mobile
 
-**Cost?** $0/month. Groq free tier + Netlify free tier.
+100% first-class mobile, not just responsive. Built for Product Hunt launch quality.
 
-**Mobile?** Yes. iOS keyboard handling, safe area insets, 44px touch targets.
+- 44px touch targets (Apple HIG)
+- Skeleton loading on slow networks
+- Copy/share buttons on AI responses
+- PWA add-to-homescreen support
+- iOS keyboard handling (100svh + visualViewport)
+- Haptic feedback on send
+- Network-aware error messages with retry backoff
+- No 300ms tap delay (`touch-action: manipulation`)
+- Orientation change scroll preservation
 
-**Custom domain?** Yes. Set it up in Netlify, update `domain` in `setup-config.json`, re-run `node setup.js`, redeploy.
+## Multi-agent setup
 
-**Update resume?** Edit `resume.md`, regenerate `system-prompt.md`, `netlify deploy --prod`.
+Works with any AI assistant, not just Claude Code:
+
+| Tier | Tool | Time |
+|------|------|------|
+| Agentic | Claude Code, Codex CLI | ~10 min |
+| Generative | ChatGPT, Copilot, Claude Desktop | ~20-30 min |
+| Manual | README instructions | ~30-45 min |
+
+## Tech
+
+- **Frontend:** Vanilla HTML/CSS/JS. Zero framework, zero build step.
+- **AI:** Groq free tier (Llama models, 4-model cascade on rate limit)
+- **Hosting:** Netlify free tier
+- **Cost:** $0/month
+
+## Status
+
+All planning reviews complete:
+
+| Review | Status |
+|--------|--------|
+| CEO / Strategy | CLEAR — scope expansion, proof cards, agent endpoint, multi-agent setup |
+| Engineering | CLEAR — XSS fix, CORS hardening, SSE chunk splitting, send cooldown |
+| Design | CLEAR — Linear design system, cards-first hierarchy, interaction states, a11y |
+| Mobile | CLEAR — 12 items for Product Hunt quality (skeleton, PWA, haptics, CLS) |
+
+**Next:** `/design-consultation` to create DESIGN.md, then implement.
+
+Full spec: [spec.md](spec.md) | Plan: [PLAN.md](PLAN.md)
 
 ## License
 
