@@ -212,9 +212,26 @@ Highlights: max 4 items. Wizard pushes hard for at least 1 (not graceful fallbac
 - Cursor blink during stream
 - "Still thinking..." after 5s with no data
 - 15s timeout (cold start + model cascade)
-- Error: "try again?" with retry button
 - Send cooldown: 2000ms between sends
 - Max 6 messages in history (in-memory, no localStorage)
+- Haptic feedback on send: `navigator.vibrate?.([10])` (feature-detected)
+
+### Error Messages (network-aware)
+| Condition | Message |
+|-----------|---------|
+| 15s timeout | "taking longer than expected. try again?" |
+| AbortError | "lost connection. try again?" |
+| HTTP 429 | "busy right now. try again in a minute." |
+| HTTP 500+ | "something went wrong on our end." |
+| `navigator.onLine === false` | "you're offline. check your connection." |
+| Default | "something went wrong. try again?" |
+
+All errors show retry button. Retry has exponential backoff: 2s first, 5s second, max 3 attempts. Button disabled during delay with countdown.
+
+### Message Actions
+Each assistant message has action icons (appear on tap/hover, auto-hide after 3s):
+- **Copy**: `navigator.clipboard.writeText()`. Brief "Copied" toast (1.5s, bottom-center).
+- **Share**: `navigator.share({ text })` with feature detection. Falls back to copy.
 
 ---
 
@@ -222,13 +239,51 @@ Highlights: max 4 items. Wizard pushes hard for at least 1 (not graceful fallbac
 
 This is a Product Hunt launch. Mobile must be top-tier, not just "responsive."
 
+### Performance Targets
+| Metric | Target | How |
+|--------|--------|-----|
+| First Contentful Paint | < 1.5s on 3G | Inline critical CSS, skeleton HTML, `font-display: swap` |
+| Largest Contentful Paint | < 2.5s on 3G | Proof cards are static HTML (no JS wait) |
+| Cumulative Layout Shift | < 0.1 | Reserve message heights, `contain: content` on messages |
+| Time to Interactive | < 3s on 3G | Single inline script, no external JS deps |
+
+### Skeleton Loading State
+On slow networks, page must never show a blank dark screen. Inline skeleton HTML (no JS dependency):
+- Header: visible immediately (static HTML)
+- Card placeholders: 2-3 rectangles with CSS pulse animation
+- Input area: visible immediately (static HTML)
+
+```css
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.12; }
+}
+.skeleton-card {
+  height: 80px;
+  border-radius: 6px;
+  background: var(--surface);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+```
+
+JS replaces skeleton with real proof cards on hydration. Skeleton is a `<div id="skeleton">` removed after init.
+
 ### Viewport & Layout
 | Spec | Value |
 |------|-------|
 | Reference viewport | 375px width (tested down to 320px) |
-| Body height | `100svh` (handles iOS address bar) |
+| Body height | `height: var(--vh, 100svh)` with JS fallback |
 | Layout | flex column: header (shrink 0) → message-list (flex 1) → input (shrink 0) |
 | Safe areas | `env(safe-area-inset-bottom)` on input area |
+
+**dvh/svh JavaScript fallback (iOS Safari 26+ compatibility):**
+```js
+function setVH() {
+  document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+}
+setVH();
+window.addEventListener('resize', setVH);
+```
 
 ### Touch Targets (Apple HIG: 44px minimum)
 | Element | Target size |
@@ -245,17 +300,40 @@ This is a Product Hunt launch. Mobile must be top-tier, not just "responsive."
 |-------------|----------|
 | Card tap | active state: `scale(0.98)` for 100ms |
 | Chip tap | same active state pattern |
+| Send tap | haptic: `navigator.vibrate?.([10])` |
 | Hover on touch devices | disabled via `@media (hover: none)` — use `:focus-visible` only |
 | Scroll | native, `overscroll-behavior: contain`, passive listeners |
 | Pull-to-refresh | blocked by `overscroll-behavior: contain` |
+| Tap delay | eliminated: `touch-action: manipulation` on all interactive elements |
+| Message tap | show copy/share action icons (auto-hide after 3s) |
+
+**Critical CSS for tap delay removal:**
+```css
+button, a, .proof-card, .suggestion-chip, .card-cta, .retry-btn,
+.connect-icon, .msg-action { touch-action: manipulation; }
+```
 
 ### iOS Keyboard
 | Pattern | Implementation |
 |---------|---------------|
-| Height | `100svh` + `visualViewport` resize listener |
+| Height | `var(--vh, 100svh)` + `visualViewport` resize listener + JS fallback |
 | Input zoom prevention | `font-size: 16px` on textarea |
 | Input position | flex-based (NOT `position: fixed`) |
 | Safe area | `padding-bottom: max(12px, env(safe-area-inset-bottom))` |
+
+### Orientation Change
+Save scroll ratio on `orientationchange`, restore after layout reflow:
+```js
+let scrollRatio = 0;
+window.addEventListener('orientationchange', () => {
+  scrollRatio = messagesEl.scrollTop / messagesEl.scrollHeight;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      messagesEl.scrollTop = scrollRatio * messagesEl.scrollHeight;
+    });
+  });
+});
+```
 
 ### Mobile Card Layout
 ```
@@ -288,11 +366,25 @@ This is a Product Hunt launch. Mobile must be top-tier, not just "responsive."
 
 Cards stack vertically, full width. No 2-col grid on mobile. Each card has generous padding (12px 16px) and clear visual separation (8px gap).
 
+### CLS Prevention
+- Pre-allocate streaming message container at estimated min-height
+- `contain: content` on `.message` elements
+- Reserve card grid height before content renders (skeleton matches real layout)
+- No layout shifts from font loading (`font-display: swap` on Inter)
+
+### Font Scaling
+Test at Android "Large" and "Largest" text sizes. Use `rem` for most sizing, `px` only for borders and icons. Ensure:
+- Card labels don't overflow
+- Chips don't break layout  
+- Input area scales proportionally
+- Message max-width adapts
+
 ### Browser Compatibility
 | Browser | Key concern |
 |---------|-------------|
-| Safari iOS | `100svh`, visualViewport, safe-area-inset, no position:fixed input |
-| Chrome Android | Standard, auto-grow textarea |
+| Safari iOS | `var(--vh)` fallback, visualViewport, safe-area-inset, no position:fixed input |
+| Safari iOS 26+ | Viewport height changes — dvh/svh JS fallback required |
+| Chrome Android | Standard, auto-grow textarea, haptic via Vibration API |
 | Samsung Internet | Empty Origin header in CORS, touch target sizing |
 | Firefox Android | Standard |
 
@@ -319,9 +411,10 @@ Cards stack vertically, full width. No 2-col grid on mobile. Each card has gener
 ```
 resume.md ──[Any AI assistant]──→ system-prompt.md
                                 → setup-config.json (with highlights[], skills, links)
-                                → setup.js → index.html (chat + cards + connect + JSON-LD)
+                                → setup.js → index.html (chat + cards + connect + JSON-LD + skeleton)
                                            → groqHandler.mjs (CORS origins)
                                            → ai-resume.json (agent endpoint)
+                                           → manifest.json (PWA)
                                            → Smart og:description
 ```
 
@@ -378,6 +471,36 @@ Served via Netlify redirect:
 
 ---
 
+## PWA (Progressive Web App)
+
+Add-to-homescreen support. Makes the product feel native, not "clearly a website."
+
+**index.html `<head>` additions:**
+```html
+<meta name="theme-color" content="{{CSS_BG}}">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+```
+
+**manifest.json (generated by setup.js):**
+```json
+{
+  "name": "Chat with {{NAME}}",
+  "short_name": "{{NAME}}",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "{{CSS_BG}}",
+  "theme_color": "{{CSS_BG}}",
+  "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+}
+```
+
+Icon: generated from initials mark during setup (canvas → PNG export), or ships with a default icon.
+
+The `theme-color` meta tag makes Android Chrome and iOS Safari blend the address bar with the page background. Critical for dark themes — without it, there's a jarring color mismatch.
+
+---
+
 ## Smart OG Description
 
 Conversation-style format generated from strongest highlight:
@@ -431,6 +554,7 @@ ai-resume/
 ├── eval-prompt.mjs              # 10 behavioral tests
 ├── index.html                   # Chat UI (zero deps, mobile-first, Linear design)
 ├── ai-resume.json               # Agent endpoint (generated by setup.js)
+├── manifest.json                # PWA manifest (generated by setup.js)
 └── netlify/functions/
     └── groqHandler.mjs          # Groq streaming + injection filter + model cascade
 ```
@@ -455,17 +579,39 @@ ai-resume/
 
 ## Verification Plan
 
+### Functional
 1. Fresh clone → CLAUDE.md flow → deploy → chat works
 2. All 4 palettes (setup.js + visual)
-3. Mobile: Safari iOS, Chrome Android, Samsung Internet, Firefox Android
-4. Eval harness: 10/10 on demo, actionable failures on sparse resume
-5. Security: .env not in git, CORS blocks unknowns, injection filter works
-6. Proof cards: render, correct hierarchy, hover/focus, fade after interaction
-7. Mobile cards: full-width stack, 44px targets, card CTAs work
-8. Connect icons: in header, correct links, 44px targets, hidden if no links
-9. Keyboard a11y: tab through cards → chips → input, focus rings, skip link
-10. ai-resume.json: valid JSON, Schema.org, at /.well-known/
-11. OG card: conversation-style preview on Twitter/LinkedIn
+3. Eval harness: 10/10 on demo, actionable failures on sparse resume
+4. Proof cards: render, correct hierarchy, hover/focus, fade after interaction
+5. Connect icons: in header, correct links, hidden if no links
+6. ai-resume.json: valid JSON, Schema.org, at /.well-known/
+7. OG card: conversation-style preview on Twitter/LinkedIn
+
+### Mobile (test on real devices)
+8. Safari iOS: keyboard handling, safe areas, input doesn't jump
+9. Chrome Android: standard behavior, haptic on send
+10. Samsung Internet: CORS with empty origin, touch targets
+11. Firefox Android: standard behavior
+12. Skeleton: visible on throttled 3G, replaced by real content
+13. Touch targets: all interactive elements ≥ 44px
+14. Tap delay: no 300ms lag on card/chip/button taps
+15. Copy button: appears on message tap, copies text, shows toast
+16. Share button: Web Share API on supported browsers, fallback to copy
+17. Orientation change: scroll position preserved on rotate
+18. Offline: "you're offline" message shown
+19. Retry: backoff works (2s → 5s → stop after 3)
+20. PWA: Add to Home Screen shows correct icon and name
+21. Font scaling: test at Android "Large" text — no overflow, no broken layout
+22. CLS: < 0.1 measured via Lighthouse mobile audit
+
+### Security
+23. .env not in git, CORS blocks unknowns, injection filter works
+
+### Accessibility
+24. Keyboard: tab through cards → chips → input, focus rings, skip link
+25. Screen reader: aria-live, card labels, action descriptions
+26. Reduced motion: animations disabled when system preference set
 
 ---
 
@@ -491,3 +637,15 @@ ai-resume/
 | 16 | Design | Wizard pushes hard for highlights | Don't gracefully fall back |
 | 17 | Design | 100% mobile-first | Touch, swipe, tap — not just responsive |
 | 18 | DX | Pre-hydrate with demo values | TTHW drops from 30 min to 2 min |
+| 19 | Mobile | Skeleton loading state | Blank dark screen = bounce on slow 3G |
+| 20 | Mobile | Copy/share buttons on messages | Recruiters share AI responses with hiring managers |
+| 21 | Mobile | touch-action: manipulation | 300ms tap delay kills perceived quality |
+| 22 | Mobile | PWA manifest + theme-color | Add to Home Screen = "real product" signal |
+| 23 | Mobile | Network-specific error messages | "try again?" is too vague for network issues |
+| 24 | Mobile | Retry with exponential backoff | Mashing retry on bad network = rate limit |
+| 25 | Mobile | Orientation scroll preservation | Rotating phone loses conversation place |
+| 26 | Mobile | CLS prevention (contain: content) | Layout shift on message insert = visible jank |
+| 27 | Mobile | Haptic feedback on send | WhatsApp/iMessage/ChatGPT all provide it |
+| 28 | Mobile | font-display: swap | Inter blocks render on slow 3G without it |
+| 29 | Mobile | dvh/svh JS fallback | iOS Safari 26+ changed viewport behavior |
+| 30 | Mobile | Share via Web Share API | Native share sheet > clipboard only |
