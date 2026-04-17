@@ -4,13 +4,47 @@ Personal AI agent page for job seekers. Chat-first landing page where recruiters
 
 ## Project Status
 
-**Phase: Pre-implementation.** All planning reviews complete. Next step: `/design-consultation` to create DESIGN.md, then build.
+**Phase: v1 core implementation landed (2026-04-17).** Code runs locally via `netlify dev`. Demo deploy + landing page + user validation are next.
 
 | Document | Purpose |
 |----------|---------|
 | `spec.md` | **Single source of truth.** All design, architecture, mobile, and UX decisions. Read this first. |
 | `PLAN.md` | Implementation tasks (12 tasks, ordered). References spec.md for design details. |
 | `README.md` | Public-facing — what we're building, current status. |
+
+### What's implemented (runs end-to-end locally)
+
+| Area | Status |
+|------|--------|
+| `index.html` (Linear design, Inter+Patrick Hand, 6px radius, cards-standalone welcome, connect icons in header, skeleton-free static cards, PWA meta, haptics, orientation handling, copy/share actions, dvh/svh fallback, touch-action, reduced-motion, network-aware errors with exponential backoff) | ✅ |
+| Mark stroke-draw intro animation (SVG letters stroke-draw → fill+dot flash → translate+scale to header position, ~1.8s, Patrick Hand cursive, sessionStorage skip on refresh) | ✅ |
+| Inline `[CARD: title \| metric]` parser (AI emits markers mid-stream, client re-renders turn as alternating bubbles + cards at stream end) | ✅ |
+| `setup.js` (atomic multi-output: welcome cards HTML, FULL_HIGHLIGHTS_MARKDOWN injected into system-prompt.md, connect icons, JSON-LD block, smart OG description, `ai-resume.json`, `manifest.json`, placeholder validation) | ✅ |
+| `netlify.toml` with `/.well-known/ai-resume.json` redirect | ✅ |
+| `groqHandler.mjs` (CORS + Samsung Internet empty-Origin, 4-model cascade on BadRequest/NotFound/RateLimit/Timeout, injection filter, think-block stripping, SSE streaming) | ✅ |
+| `system-prompt.md` with card-usage rules + `{{FULL_HIGHLIGHTS_MARKDOWN}}` injection | ✅ |
+| `eval-prompt.mjs` with 12 behavioral tests including CARDS-LIST and CARDS-NARRATIVE | ✅ |
+| Generated artifacts (`ai-resume.json`, `manifest.json`) — checked into git; setup.js regenerates on config change | ✅ |
+| Card click auto-submits (bypasses 2s send cooldown for programmatic triggers) | ✅ |
+| `icon-192.png` for PWA manifest | ⏳ TODO — manifest references it; first `/icon-192.png` request 404s harmlessly |
+| Landing page on agamarora.com (Task 10) | ⏳ Deferred |
+| Demo deploy to `ai-resume-demo.netlify.app` (Task 9) | ⏳ Deferred — needs `netlify init` + env var |
+| User validation with 5-10 people (Task 12) | ⏳ Deferred |
+
+### How to test next time
+
+```bash
+cd D:/AA/ai-resume
+npm install                     # groq-sdk
+netlify dev                     # serves at localhost:8888
+# Open http://localhost:8888 in a fresh tab (clear sessionStorage or open incognito to see the mark intro)
+# Click a card → should auto-submit "tell me about [title]" and stream AI response
+# Try "show me her projects" → AI should emit [CARD:...] markers, client renders inline cards
+npm run eval                    # 12-test behavioral eval (requires .env with GROQ_API_KEY)
+node setup.js                   # re-apply setup-config.json to templates (from .template-backup/)
+```
+
+**Known gotcha:** `.template-backup/` (gitignored) holds the template source of truth. Edits to the hydrated `index.html` alone will be reverted next time `node setup.js` runs. Apply changes to BOTH files, or edit the backup and re-run setup. Do not delete the backup unless you intentionally want to re-capture from the current hydrated state (losing template placeholders).
 
 ## What we're building
 

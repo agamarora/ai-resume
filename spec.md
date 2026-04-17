@@ -3,6 +3,17 @@
 Single source of truth. All design, architecture, and UX decisions consolidated here.
 Reviews: CEO (CLEAR), Eng (CLEAR), Design (CLEAR at 7.4/10).
 
+## Implementation Status (2026-04-17)
+
+v1 core landed. Runs end-to-end via `netlify dev` at `localhost:8888`. See CLAUDE.md § "What's implemented" for the full checklist. Deploy + landing page + user validation are the remaining open tracks.
+
+**Implemented beyond the original spec:**
+- **Mark stroke-draw intro animation** (per design-consultation). 72px Patrick Hand cursive SVG stroke-draws "ac" in center of viewport (1s), then fills in + dot flashes (200ms), hold 300ms, translate+scale to header position (500ms). Total ~1.8s. Uses sessionStorage to skip on refresh within the same tab session. Reduced-motion users skip entirely. This is the signature opening moment; all other element entrances are fast/restrained to avoid feeling sluggish.
+- **Patrick Hand font** for the header mark (both at intro size 72px and header size 22px) — makes the handoff from animated SVG to static header text seamless.
+- **`skipCooldown` flag on sendMessage** — card and chip taps bypass the 2s user-spam cooldown so programmatic submits always fire immediately. User-typed Enter/click still enforces cooldown.
+
+**Files that differ from first-read of this spec:** `.template-backup/` holds template source-of-truth with `{{PLACEHOLDERS}}`; `setup.js` reads from backup and writes hydrated outputs. Edits to hydrated files alone get reverted on next `node setup.js`.
+
 ---
 
 ## Vision

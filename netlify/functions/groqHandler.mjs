@@ -35,9 +35,9 @@ const MODELS = [
   "llama-3.3-70b-versatile",
 ];
 
-// {{ALLOWED_ORIGINS}} — replaced by setup.js
+// http://localhost:8888 — replaced by setup.js
 const ALLOWED_ORIGINS = new Set([
-  "{{ALLOWED_ORIGINS}}",
+  "http://localhost:8888",
 ]);
 
 function isOriginAllowed(origin) {

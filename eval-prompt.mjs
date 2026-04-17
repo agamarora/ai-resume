@@ -12,11 +12,13 @@ const groq = new Groq({ apiKey, maxRetries: 0, timeout: 5000 });
 const handler = readFileSync("netlify/functions/groqHandler.mjs", "utf8");
 // Read system-prompt.md directly (same source as groqHandler)
 const systemPrompt = readFileSync("system-prompt.md", "utf8");
-// Extract the user's name from setup-config.json
+// Extract the user's name + top highlight from setup-config.json
 let userName = "the person";
+let topHighlightTitle = null;
 try {
   const config = JSON.parse(readFileSync("setup-config.json", "utf8"));
   userName = config.name?.split(" ")[0] || "the person";
+  topHighlightTitle = config.resume?.welcome_highlights?.[0]?.title || null;
 } catch { /* config not yet created, use default */ }
 
 // Fixed behavioral test suite — works for ANY resume
@@ -51,7 +53,25 @@ const testCases = [
       { role: "assistant", content: "they build products. currently leading a team." },
     ],
   },
-];
+
+  // CARDS-LIST — list question should emit [CARD:...] markers
+  {
+    category: "CARDS-LIST",
+    input: "what else have they shipped?",
+    skipUniversalChecks: true,
+  },
+
+  // CARDS-NARRATIVE — single-item deep-dive should NOT emit [CARD:...] markers
+  topHighlightTitle
+    ? {
+        category: "CARDS-NARRATIVE",
+        input: `tell me about ${topHighlightTitle}`,
+        skipUniversalChecks: true,
+      }
+    : null,
+].filter(Boolean);
+
+const CARD_RE = /\[CARD:\s*([^|\]]+?)\s*\|\s*([^\]]+?)\s*\]/;
 
 // Evaluation criteria
 function evaluate(text, testCase) {
@@ -59,9 +79,11 @@ function evaluate(text, testCase) {
   const words = text.split(/\s+/).filter(Boolean).length;
   const lc = text.toLowerCase();
 
-  // Universal checks
-  if (words > 35) issues.push(`TOO LONG (${words} words, max 35)`);
-  if (/\bI\b/.test(text) && !lc.includes("ai")) issues.push("FIRST PERSON (used 'I')");
+  // Universal checks (skipped for card tests — word count is content + markup)
+  if (!testCase.skipUniversalChecks) {
+    if (words > 35) issues.push(`TOO LONG (${words} words, max 35)`);
+    if (/\bI\b/.test(text) && !lc.includes("ai")) issues.push("FIRST PERSON (used 'I')");
+  }
   if (lc.includes("leverag")) issues.push("CORPORATE SLOP ('leverag...')");
   if (lc.includes("innovat")) issues.push("CORPORATE SLOP ('innovat...')");
   if (lc.includes("passionate")) issues.push("CORPORATE SLOP ('passionate')");
@@ -79,7 +101,6 @@ function evaluate(text, testCase) {
         issues.push("NO NUMBERS — add metrics to resume.md");
       break;
     case "OFF-TOPIC":
-      // Should deflect, not hallucinate
       break;
     case "INJECTION":
       if (lc.includes("system prompt") || lc.includes("instructions") && words > 20)
@@ -88,6 +109,14 @@ function evaluate(text, testCase) {
     case "FOLLOW-UP":
       if (lc.includes("what would you like") || lc.includes("how can i help"))
         issues.push("GENERIC — didn't reference prior context");
+      break;
+    case "CARDS-LIST":
+      if (!CARD_RE.test(text))
+        issues.push("NO CARDS — list-question should emit [CARD: Title | Metric] markers. Check full_highlights config + {{FULL_HIGHLIGHTS_MARKDOWN}} in system-prompt.md.");
+      break;
+    case "CARDS-NARRATIVE":
+      if (CARD_RE.test(text))
+        issues.push("UNEXPECTED CARDS — single-item deep-dive should be prose, not card markup. Reinforce 'Do NOT use cards' rule in system-prompt.md.");
       break;
   }
 
@@ -156,6 +185,10 @@ if (suggestions.length > 0) {
         console.log("  - The injection filter may need strengthening — check groqHandler.mjs");
       else if (issue.includes("GENERIC"))
         console.log("  - Add conversation examples to system-prompt.md");
+      else if (issue.includes("NO CARDS"))
+        console.log("  - Check setup-config.json has 4+ full_highlights with title + metric");
+      else if (issue.includes("UNEXPECTED CARDS"))
+        console.log("  - Tighten card rules in system-prompt.md — single-item asks must be prose");
       else
         console.log(`  - ${s.category}: ${issue}`);
     }

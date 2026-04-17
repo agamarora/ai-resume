@@ -1,0 +1,54 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Alex Chen",
+  "jobTitle": "Senior Product Designer",
+  "description": "Ask Alex's AI about her career in product design.",
+  "knowsAbout": [
+    "Design Systems",
+    "Figma",
+    "Accessibility"
+  ],
+  "sameAs": [
+    "https://linkedin.com/in/alexchen",
+    "mailto:alex@example.com"
+  ],
+  "ai-resume": {
+    "version": "2.0",
+    "availability": "open",
+    "contactPreference": "email",
+    "chatEndpoint": "/.netlify/functions/groqHandler",
+    "highlights": [
+      {
+        "title": "Design System v3",
+        "metric": "400+ teams adopted",
+        "timeframe": "2022-Present"
+      },
+      {
+        "title": "Checkout Redesign",
+        "metric": "+12% conversion lift",
+        "timeframe": "2019-2022"
+      },
+      {
+        "title": "Component accessibility",
+        "metric": "WCAG AA across 40 flows",
+        "tag": "accessibility"
+      },
+      {
+        "title": "Onboarding redesign",
+        "metric": "45% → 72% completion",
+        "tag": "onboarding"
+      },
+      {
+        "title": "Design ops tooling",
+        "metric": "used by 80 designers",
+        "tag": "tools"
+      },
+      {
+        "title": "Collaborative whiteboard",
+        "metric": "2M+ monthly active users",
+        "tag": "collaboration"
+      }
+    ]
+  }
+}

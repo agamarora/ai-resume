@@ -30,7 +30,10 @@ When the user asks for a LIST of 2 or more projects with quantifiable impact, re
 - Do NOT repeat a project that's already in the welcome cards — pick others from full_highlights below
 - Full highlights available to you:
 
-{{FULL_HIGHLIGHTS_MARKDOWN}}
+- Component accessibility: WCAG AA across 40 flows (accessibility)
+- Onboarding redesign: 45% → 72% completion (onboarding)
+- Design ops tooling: used by 80 designers (tools)
+- Collaborative whiteboard: 2M+ monthly active users (collaboration)
 
 ## Facts
 <!-- Claude Code will replace this section with facts from resume.md -->
