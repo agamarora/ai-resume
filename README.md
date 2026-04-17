@@ -21,11 +21,14 @@ A chat-first personal page where recruiters talk to an AI that knows your career
 │ ac. Alex Chen             [in] [✉]  │
 ├─────────────────────────────────────┤
 │                                     │
-│ ┌─ Card ─────┐ ┌─ Card ─────┐      │
-│ │ Figma      │ │ Stripe     │      │
-│ │ 400+ teams │ │ +12% conv  │      │
-│ │ [Ask] [→]  │ │ [Ask] [→]  │      │
-│ └────────────┘ └────────────┘      │
+│ ┌─ Card ─────────────────────────┐ │
+│ │ Design System v3            ›  │ │   whole card is a button
+│ │ 400+ teams adopted              │ │   chevron in corner
+│ └─────────────────────────────────┘ │
+│ ┌─ Card ─────────────────────────┐ │
+│ │ Checkout Redesign           ›  │ │
+│ │ +12% conversion lift            │ │
+│ └─────────────────────────────────┘ │
 │                                     │
 │ ask me anything about Alex's        │
 │ career.                             │
@@ -37,7 +40,9 @@ A chat-first personal page where recruiters talk to an AI that knows your career
 └─────────────────────────────────────┘
 ```
 
-Proof cards first. Greeting below. Suggestion chips. Then conversation.
+Cards first (project + metric, no clutter). Greeting below. Suggestion chips. Then conversation.
+
+**Cards come back in conversation.** When a recruiter asks a list-type question ("show me her ML work", "what else has she shipped?"), the AI answers with 2-3 inline cards instead of prose. Same visual grammar — recruiter never has to read a wall of text to find proof. This is the product differentiator.
 
 ## Design
 

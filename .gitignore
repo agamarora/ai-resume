@@ -5,3 +5,6 @@ node_modules/
 .DS_Store
 .gstack-screenshots/
 setup-config.json
+.gstack/
+.claude/
+.design-preview.html

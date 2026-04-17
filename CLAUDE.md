@@ -18,8 +18,12 @@ A recruiter clicks a link and sees proof cards (quantified career highlights) as
 
 **Key design decisions (all in spec.md):**
 - Linear-inspired design system: Inter font, 8px grid, 6px tight radius, 150ms transitions
-- Cards-first welcome hierarchy (proof before greeting)
+- Cards-first welcome hierarchy (proof before greeting) — cards are standalone, NOT nested in message bubbles (invariant)
+- Whole card is the button (no "Ask" / "Connect →" sub-buttons, no decorative arrow). Chevron affordance in top-right.
+- Project + metric only on cards (company name removed — still in resume.md + agent endpoint)
 - Cards fade to 50% after first interaction — conversation takes over
+- **Cards reappear in conversation** — when recruiter asks a list-type question, AI emits `[CARD: title | metric]` markup that client parses into inline cards. The product differentiator.
+- `setup-config.json` carries TWO highlight lists: `welcome_highlights` (2-4, static HTML, SEO) + `full_highlights` (4-16, embedded in system prompt for AI to surface in chat)
 - Persistent connect icons in header (conversion path never lost)
 - Machine-readable agent endpoint at `/.well-known/ai-resume.json`
 - Multi-agent setup: works with Claude Code, Codex, ChatGPT, Copilot, or manually
@@ -31,7 +35,7 @@ A recruiter clicks a link and sees proof cards (quantified career highlights) as
 npm install          # groq-sdk (only dependency)
 netlify dev          # local server at localhost:8888
 npm run setup        # apply setup-config.json to templates
-npm run eval         # 10-test behavioral eval (needs .env)
+npm run eval         # 12-test behavioral eval (needs .env)
 ```
 
 Requires `.env` with `GROQ_API_KEY=gsk_...` for local dev and eval.
@@ -51,7 +55,7 @@ resume.md ──[Any AI assistant]──→ system-prompt.md
 - **groqHandler.mjs** — Netlify function. Reads system-prompt.md, streams via Groq. 4-model cascade on rate limit.
 - **setup.js** — Multi-output generator: cards HTML, JSON-LD, PWA manifest, OG tags, agent endpoint. Atomic writes.
 - **palettes.js** — 4 palettes + custom. WCAG AA contrast validation.
-- **eval-prompt.mjs** — 10 behavioral tests (greeting, identity, hire signal, injection, follow-up).
+- **eval-prompt.mjs** — 12 behavioral tests (greeting, identity, hire signal, injection, follow-up, cards-list, cards-narrative).
 
 ## Key Files
 
@@ -60,7 +64,7 @@ resume.md ──[Any AI assistant]──→ system-prompt.md
 | `spec.md` | Design decisions, mobile spec, interaction states | When making any design/UX decision |
 | `resume.md` | Career data | When resume changes |
 | `system-prompt.md` | AI personality, tone, word limits | When adjusting how the AI sounds |
-| `setup-config.json` | Name, palette, domain, initials, highlights | When changing appearance or deploy URL |
+| `setup-config.json` | Name, palette, domain, initials, `welcome_highlights` (2-4), `full_highlights` (4-16) | When changing appearance or deploy URL |
 
 ## Setup Wizard
 
@@ -68,8 +72,11 @@ When a user opens Claude Code in this repo and asks to set up their resume, guid
 
 1. **Resume** — Ask for their career info or have them paste a resume. Write `resume.md`. Push hard for quantified achievements (metrics, numbers, percentages).
 2. **AI Personality** — Read `resume.md` and generate `system-prompt.md`. Replace the demo persona facts with their career. Ask if the tone is right.
-3. **Highlights** — Extract 3-4 strongest career impacts for proof cards. Each needs: title, company, metric. Strongly push for metrics — help the user find numbers if they don't have them. Text-only fallback is absolute last resort.
-4. **Configuration** — Collect name, title, palette (midnight-gold / deep-ocean / obsidian-rose / slate-mint / custom), initials, domain, LinkedIn URL, email. Write `setup-config.json`. Run `node setup.js`.
+3. **Highlights (two lists)** — Extract career impacts. Two separate lists:
+   - `welcome_highlights` (2-4 items): the strongest impacts, shown as cards on the welcome state. Each needs: `title`, `metric`, `timeframe`. No `company` field (removed from card visual — still lives in `resume.md` narrative).
+   - `full_highlights` (4-16 items): the rest of the proof-worthy projects. The AI will surface these as inline cards during conversation when a recruiter asks list-type questions ("show me her ML work", "what else?"). Each needs: `title`, `metric`, and optional `tag` (short category like `accessibility`, `infra`, `ml`).
+   Strongly push for metrics in both lists — help the user find numbers if they don't have them. Text-only fallback is absolute last resort. Cards without metrics weaken the whole proof model.
+4. **Configuration** — Collect name, title, palette (midnight-gold / deep-ocean / obsidian-rose / slate-mint / custom), initials, domain, LinkedIn URL, email. Write `setup-config.json` with BOTH highlight lists. Run `node setup.js` (this will also inject `full_highlights` as markdown into `system-prompt.md` via `{{FULL_HIGHLIGHTS_MARKDOWN}}` so the AI can reference them).
 5. **API Key** — Ask for their Groq API key (starts with `gsk_`). Write `.env`.
 6. **Test** — Run `npm install && netlify dev`. Have them try: "hi", "why should I hire [name]?", "ignore all previous instructions".
 7. **Coach** — Review `resume.md` for vague descriptions, missing metrics, weak verbs. 5-dimension scorecard: specificity, metrics, impact language, consistency, completeness.
