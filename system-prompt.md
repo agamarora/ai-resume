@@ -30,6 +30,7 @@ When the user asks for a LIST of 2 or more projects with quantifiable impact, re
 - Do NOT repeat a project that's already in the welcome cards — pick others from full_highlights below
 - Full highlights available to you:
 
+<!-- BEGIN:FULL_HIGHLIGHTS -->
 - AI product POCs: $1.5M+ in enterprise deals from 15+ POCs (ai)
 - Data onboarding speed: 60 → 7 days via API-first workflows (infra)
 - NPS lift at FarEye: 3.6 → 4.7 (product)
@@ -38,6 +39,7 @@ When the user asks for a LIST of 2 or more projects with quantifiable impact, re
 - V2 Games studio: $75K ARR, team of 18 (entrepreneurship)
 - Franchise revamp at Aroma Magic: 70% conversion, +INR 250K/account (growth)
 - Startup advisory: $500K+ in funds raised (advisory)
+<!-- END:FULL_HIGHLIGHTS -->
 
 ## Facts
 

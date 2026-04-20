@@ -6,16 +6,18 @@
 // Generated outputs: index.html, netlify/functions/groqHandler.mjs,
 // system-prompt.md, ai-resume.json, manifest.json
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import { palettes, derivePaletteVars, validateContrast } from "./palettes.js";
 
+// Files with {{PLACEHOLDER}} substitution. Read from templates/, write hydrated to root.
+// system-prompt.md is NOT here — it's wizard-generated per user, setup.js only refreshes
+// the full_highlights list between HTML-comment markers in place.
 const TEMPLATE_FILES = [
   "index.html",
   "netlify/functions/groqHandler.mjs",
-  "system-prompt.md",
 ];
-const BACKUP_DIR = ".template-backup";
+const TEMPLATES_DIR = "templates";
 
 // --- Validation ---
 
@@ -528,21 +530,19 @@ try {
   const palette = config.palette === "custom" ? config.custom_palette : palettes[config.palette];
   const vars = derivePaletteVars(palette);
 
-  // 4. Backup originals (first run only)
-  if (!existsSync(BACKUP_DIR)) {
-    mkdirSync(BACKUP_DIR, { recursive: true });
-    mkdirSync(join(BACKUP_DIR, "netlify/functions"), { recursive: true });
-    for (const file of TEMPLATE_FILES) {
-      if (existsSync(file)) copyFileSync(file, join(BACKUP_DIR, file));
-    }
-    console.log("📦 Template backup created in .template-backup/");
+  // 4. Read templates from tracked templates/ directory
+  if (!existsSync(TEMPLATES_DIR)) {
+    console.error(`❌ ${TEMPLATES_DIR}/ directory not found — this repo is missing the template source of truth.`);
+    process.exit(1);
   }
-
-  // 5. Read templates (from backup if exists, otherwise current)
   const sources = {};
   for (const file of TEMPLATE_FILES) {
-    const backupPath = join(BACKUP_DIR, file);
-    sources[file] = readFileSync(existsSync(backupPath) ? backupPath : file, "utf8");
+    const templatePath = join(TEMPLATES_DIR, file);
+    if (!existsSync(templatePath)) {
+      console.error(`❌ template missing: ${templatePath}`);
+      process.exit(1);
+    }
+    sources[file] = readFileSync(templatePath, "utf8");
   }
 
   // 6. Build replacement map
@@ -634,12 +634,28 @@ try {
     process.exit(1);
   }
 
-  // 11. Write all files atomically
+  // 11. Write templated files atomically
   for (const [file, content] of Object.entries(outputs)) {
     writeFileSync(file, content, "utf8");
   }
   writeFileSync("ai-resume.json", JSON.stringify(aiResumeJson, null, 2), "utf8");
   writeFileSync("manifest.json", JSON.stringify(manifestJson, null, 2), "utf8");
+
+  // 12. Refresh full_highlights list inside system-prompt.md between markers.
+  // The file itself is wizard-generated per user; we only own the list block.
+  let promptUpdated = false;
+  if (existsSync("system-prompt.md")) {
+    const prompt = readFileSync("system-prompt.md", "utf8");
+    const markerRe = /<!-- BEGIN:FULL_HIGHLIGHTS -->[\s\S]*?<!-- END:FULL_HIGHLIGHTS -->/;
+    if (markerRe.test(prompt)) {
+      const block = `<!-- BEGIN:FULL_HIGHLIGHTS -->\n${fullHighlightsMd}\n<!-- END:FULL_HIGHLIGHTS -->`;
+      writeFileSync("system-prompt.md", prompt.replace(markerRe, block), "utf8");
+      promptUpdated = true;
+    } else {
+      console.warn("⚠ system-prompt.md has no <!-- BEGIN:FULL_HIGHLIGHTS --> markers — full_highlights list not refreshed.");
+      console.warn("  Add markers around the bulleted list so `node setup.js` can keep it in sync with setup-config.json.");
+    }
+  }
 
   const whCount = resume.welcome_highlights?.length || 0;
   const fhCount = resume.full_highlights?.length || 0;
@@ -650,7 +666,7 @@ try {
   console.log(`   Domain: ${domain}`);
   console.log(`\n   ✓ index.html (${whCount} welcome cards, JSON-LD, connect icons${config.demo_mode ? ", demo banner" : ""})`);
   console.log(`   ✓ netlify/functions/groqHandler.mjs (CORS: ${originUrl})`);
-  console.log(`   ✓ system-prompt.md (${fhCount} full highlights embedded)`);
+  console.log(`   ${promptUpdated ? "✓" : "·"} system-prompt.md (${promptUpdated ? `${fhCount} full highlights refreshed between markers` : "untouched — add <!-- BEGIN/END:FULL_HIGHLIGHTS --> markers to enable sync"})`);
   console.log(`   ✓ ai-resume.json (/.well-known/ endpoint)`);
   console.log(`   ✓ manifest.json (PWA)`);
   console.log(`\nNext: add GROQ_API_KEY to .env, then 'netlify dev' to test.`);

@@ -1,7 +1,6 @@
 .env
 node_modules/
 .netlify/
-.template-backup/
 .DS_Store
 .gstack-screenshots/
 setup-config.json

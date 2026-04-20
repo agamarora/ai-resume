@@ -47,7 +47,9 @@ npm run eval                    # 12-test behavioral eval (requires .env with GR
 node setup.js                   # re-apply setup-config.json to templates (from .template-backup/)
 ```
 
-**Known gotcha:** `.template-backup/` (gitignored) holds the template source of truth. Edits to the hydrated `index.html` alone will be reverted next time `node setup.js` runs. Apply changes to BOTH files, or edit the backup and re-run setup. Do not delete the backup unless you intentionally want to re-capture from the current hydrated state (losing template placeholders).
+**Template source of truth:** `templates/` (tracked in git) holds the raw `{{PLACEHOLDER}}` versions of `index.html` and `groqHandler.mjs`. `setup.js` reads from `templates/` and writes hydrated files to the repo root. Edits to the hydrated root files alone will be reverted on the next `node setup.js` run — apply changes to `templates/` instead, then run setup.
+
+**`system-prompt.md` is different:** the wizard generates it fresh per user. `setup.js` does NOT rewrite it from a template; it only refreshes the `full_highlights` bulleted list between `<!-- BEGIN:FULL_HIGHLIGHTS -->` and `<!-- END:FULL_HIGHLIGHTS -->` markers. When generating `system-prompt.md` in step 2 below, ALWAYS include those markers around the full_highlights list so future setup.js runs can keep it in sync with setup-config.json.
 
 ## What we're building
 
@@ -108,12 +110,12 @@ resume.md ──[Any AI assistant]──→ system-prompt.md
 When a user opens Claude Code in this repo and asks to set up their resume, guide them through these steps in order:
 
 1. **Resume** — Ask for their career info or have them paste a resume. Write `resume.md`. Push hard for quantified achievements (metrics, numbers, percentages).
-2. **AI Personality** — Read `resume.md` and generate `system-prompt.md`. Replace the demo persona facts with their career. Ask if the tone is right.
+2. **AI Personality** — Read `resume.md` and generate `system-prompt.md`. Replace the demo persona facts with their career. MUST include `<!-- BEGIN:FULL_HIGHLIGHTS -->` and `<!-- END:FULL_HIGHLIGHTS -->` markers around the bulleted `full_highlights` list (setup.js uses these markers to keep the list in sync with setup-config.json). Ask if the tone is right.
 3. **Highlights (two lists)** — Extract career impacts. Two separate lists:
    - `welcome_highlights` (2-4 items): the strongest impacts, shown as cards on the welcome state. Each needs: `title`, `metric`, `timeframe`. No `company` field (removed from card visual — still lives in `resume.md` narrative).
    - `full_highlights` (4-16 items): the rest of the proof-worthy projects. The AI will surface these as inline cards during conversation when a recruiter asks list-type questions ("show me her ML work", "what else?"). Each needs: `title`, `metric`, and optional `tag` (short category like `accessibility`, `infra`, `ml`).
    Strongly push for metrics in both lists — help the user find numbers if they don't have them. Text-only fallback is absolute last resort. Cards without metrics weaken the whole proof model.
-4. **Configuration** — Collect name, title, palette (midnight-gold / deep-ocean / obsidian-rose / slate-mint / custom), initials, domain, LinkedIn URL, email. Write `setup-config.json` with BOTH highlight lists. Run `node setup.js` (this will also inject `full_highlights` as markdown into `system-prompt.md` via `{{FULL_HIGHLIGHTS_MARKDOWN}}` so the AI can reference them).
+4. **Configuration** — Collect name, title, palette (midnight-gold / deep-ocean / obsidian-rose / slate-mint / custom), initials, domain, LinkedIn URL, GitHub URL, email. Write `setup-config.json` with BOTH highlight lists (`resume.links` accepts `linkedin`, `github`, and `email`). Run `node setup.js` — this reads from `templates/` and writes hydrated `index.html` + `groqHandler.mjs` to the repo root, plus refreshes the `full_highlights` list inside `system-prompt.md` between the BEGIN/END markers.
 5. **API Key** — Ask for their Groq API key (starts with `gsk_`). Write `.env`.
 6. **Test** — Run `npm install && netlify dev`. Have them try: "hi", "why should I hire [name]?", "ignore all previous instructions".
 7. **Coach** — Review `resume.md` for vague descriptions, missing metrics, weak verbs. 5-dimension scorecard: specificity, metrics, impact language, consistency, completeness.
