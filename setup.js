@@ -372,24 +372,13 @@ const DEMO_BANNER_CSS = `
       letter-spacing: -0.005em;
     }
     .demo-banner strong { font-weight: 600; color: var(--text); }
-    .demo-banner a,
-    .demo-banner-link {
+    .demo-banner a {
       color: var(--accent);
       text-decoration: none;
       font-weight: 500;
       margin-left: 4px;
     }
-    .demo-banner-link {
-      background: transparent;
-      border: none;
-      padding: 0;
-      font: inherit;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-    .demo-banner a:hover,
-    .demo-banner-link:hover { text-decoration: underline; }
-    .demo-banner-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+    .demo-banner a:hover { text-decoration: underline; }
     .demo-banner-close {
       position: absolute;
       right: 4px;
@@ -418,7 +407,7 @@ const DEMO_BANNER_CSS = `
     }`;
 
 const DEMO_BANNER_HTML = `<div class="demo-banner" id="demo-banner" role="note">
-    <span>👋 Demo of the <strong>ai-resume</strong> template <button type="button" class="demo-banner-link" id="demo-banner-link">Make your own →</button></span>
+    <span>Demo of the <strong>ai-resume</strong> template</span>
     <button class="demo-banner-close" id="demo-banner-close" aria-label="Dismiss demo banner" type="button">✕</button>
   </div>`;
 
@@ -469,7 +458,6 @@ const DEMO_BANNER_JS = `(function demoBanner() {
       };
 
       chip?.addEventListener("click", (e) => { e.preventDefault(); open(chip); });
-      document.getElementById("demo-banner-link")?.addEventListener("click", (e) => { e.preventDefault(); open(e.currentTarget); });
       document.getElementById("demo-modal-close")?.addEventListener("click", close);
       overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
       document.addEventListener("keydown", (e) => {
