@@ -4,7 +4,7 @@ Personal AI agent page for job seekers. Chat-first landing page where recruiters
 
 ## Project Status
 
-**Phase: v1 core implementation landed (2026-04-17).** Code runs locally via `netlify dev`. Demo deploy + landing page + user validation are next.
+**Phase: v1 deployed (2026-04-20).** Live demo at https://ai-resume-demo.netlify.app. Landing page on agamarora.com + user validation are next.
 
 | Document | Purpose |
 |----------|---------|
@@ -26,10 +26,13 @@ Personal AI agent page for job seekers. Chat-first landing page where recruiters
 | `eval-prompt.mjs` with 12 behavioral tests including CARDS-LIST and CARDS-NARRATIVE | ✅ |
 | Generated artifacts (`ai-resume.json`, `manifest.json`) — checked into git; setup.js regenerates on config change | ✅ |
 | Card click auto-submits (bypasses 2s send cooldown for programmatic triggers) | ✅ |
-| `icon-192.png` for PWA manifest | ⏳ TODO — manifest references it; first `/icon-192.png` request 404s harmlessly |
-| Landing page on agamarora.com (Task 10) | ⏳ Deferred |
-| Demo deploy to `ai-resume-demo.netlify.app` (Task 9) | ⏳ Deferred — needs `netlify init` + env var |
-| User validation with 5-10 people (Task 12) | ⏳ Deferred |
+| `icon-192.png` for PWA manifest (deep-ocean bg + accent dot, 192x192, generated via `scripts/generate-icon.mjs`) | ✅ |
+| Demo deploy to `https://ai-resume-demo.netlify.app` with `GROQ_API_KEY` env var + CORS allow-list (Task 9) | ✅ |
+| `SETUP-GUIDE.md` for tier-2 AI users (ChatGPT, Claude Desktop, Copilot, Gemini) | ✅ |
+| Landing page on agamarora.com (Task 10) | ⏳ Deferred — separate repo |
+| User validation with 5-10 people (Task 12) | ⏳ Deferred — DM target users, watch setup, capture friction |
+| README demo GIF | ⏳ Deferred — recording manually once happy with demo |
+| Auto-generate icon from initials + palette in `setup.js` | ⏳ Deferred to v1.1 — adds native dep |
 
 ### How to test next time
 

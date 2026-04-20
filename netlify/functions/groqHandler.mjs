@@ -35,9 +35,9 @@ const MODELS = [
   "llama-3.3-70b-versatile",
 ];
 
-// http://localhost:8888 — replaced by setup.js
+// https://ai-resume-demo.netlify.app — replaced by setup.js
 const ALLOWED_ORIGINS = new Set([
-  "http://localhost:8888",
+  "https://ai-resume-demo.netlify.app",
 ]);
 
 function isOriginAllowed(origin) {

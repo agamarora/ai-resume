@@ -2,17 +2,21 @@
 
 Your resume, alive. A personal AI agent page for job seekers.
 
-> **Status: Building in public.** Spec finalized, reviews cleared, implementation next. See [spec.md](spec.md) for the full design.
+**Live demo:** https://ai-resume-demo.netlify.app
 
-## What this is
+A recruiter clicks a link and immediately sees proof cards with your strongest career impacts. They scan three metrics in six seconds. They ask questions. They chat with an AI that knows your career. They connect. The chat IS the landing page.
 
-A chat-first personal page where recruiters talk to an AI that knows your career. Not a chatbot slapped onto a portfolio — the chat IS the landing page. Proof cards show your strongest impacts at a glance. A machine-readable endpoint lets recruiter AI agents query your career data.
+Recruiter AI agents can also query `/.well-known/ai-resume.json` for structured Schema.org data. Your career is readable by humans AND machines.
 
-**For job seekers:** Paste your resume into any AI assistant (Claude Code, ChatGPT, Codex). Minutes later, you have a live AI agent page. Setup takes one prompt.
+## Quick start
 
-**For recruiters:** Click a link, see proof cards (quantified career impacts), ask anything, connect. The 6-second first impression is built in.
+| You have | Follow |
+|---|---|
+| Claude Code or Codex CLI | Click **Use this template** → clone → open in Claude Code → follow [CLAUDE.md](CLAUDE.md). ~10 min. |
+| ChatGPT, Claude Desktop, Copilot, Gemini | Click **Use this template** → clone → follow [SETUP-GUIDE.md](SETUP-GUIDE.md). ~30 min. |
+| No AI assistant | Same as above. SETUP-GUIDE.md walks you through manually editing files. ~45 min. |
 
-**For recruiter AI agents:** Query `/.well-known/ai-resume.json` for structured Schema.org Person data, skills, availability, and a chat endpoint.
+All paths end at a live Netlify URL. $0/month.
 
 ## How it looks
 
@@ -42,7 +46,7 @@ A chat-first personal page where recruiters talk to an AI that knows your career
 
 Cards first (project + metric, no clutter). Greeting below. Suggestion chips. Then conversation.
 
-**Cards come back in conversation.** When a recruiter asks a list-type question ("show me her ML work", "what else has she shipped?"), the AI answers with 2-3 inline cards instead of prose. Same visual grammar — recruiter never has to read a wall of text to find proof. This is the product differentiator.
+**Cards come back in conversation.** When a recruiter asks a list-type question ("show me her ML work", "what else has she shipped?"), the AI answers with 2-3 inline cards instead of prose. Same visual grammar, recruiter never reads a wall of text to find proof. This is the product differentiator.
 
 ## Design
 
@@ -59,62 +63,45 @@ Linear-inspired design system. Inter font, 8px grid, tight border-radius, dark p
 
 ```
 resume.md ──[Any AI assistant]──→ system-prompt.md
-                                → setup-config.json (highlights, skills, links)
+                                → setup-config.json (welcome + full highlights, skills, links)
                                 → setup.js → index.html (chat + cards + JSON-LD)
                                            → ai-resume.json (agent endpoint)
                                            → manifest.json (PWA)
 ```
 
-- **index.html** — Single-file chat UI. Zero deps. Mobile-first. Proof cards, streaming SSE, skeleton loading.
-- **groqHandler.mjs** — Netlify function. 4-model cascade, injection filter, SSE streaming.
-- **setup.js** — Config-driven multi-file generator. Cards, JSON-LD, PWA manifest, OG tags. Atomic writes.
+- **index.html** — Single-file chat UI. Zero deps. Mobile-first. Welcome cards, inline `[CARD:...]` parser for conversation cards, streaming SSE, skeleton loading, PWA.
+- **groqHandler.mjs** — Netlify function. 4-model cascade on rate limit, injection filter, SSE streaming, CORS.
+- **setup.js** — Config-driven multi-file generator. Welcome cards HTML, JSON-LD, PWA manifest, OG tags, agent endpoint. Atomic writes.
 - **ai-resume.json** — Schema.org Person endpoint for agent-to-agent communication.
+- **palettes.js** — 4 palettes + custom, WCAG AA validation.
+- **eval-prompt.mjs** — 12 behavioral tests (greeting, identity, hire signal, injection, follow-up, cards-list, cards-narrative).
 
 ## Mobile
 
-100% first-class mobile, not just responsive. Built for Product Hunt launch quality.
+100% first-class mobile, not an afterthought.
 
 - 44px touch targets (Apple HIG)
 - Skeleton loading on slow networks
 - Copy/share buttons on AI responses
 - PWA add-to-homescreen support
-- iOS keyboard handling (100svh + visualViewport)
+- iOS keyboard handling (100svh + visualViewport + dvh/svh JS fallback)
 - Haptic feedback on send
-- Network-aware error messages with retry backoff
+- Network-aware error messages with exponential-backoff retry
 - No 300ms tap delay (`touch-action: manipulation`)
 - Orientation change scroll preservation
-
-## Multi-agent setup
-
-Works with any AI assistant, not just Claude Code:
-
-| Tier | Tool | Time |
-|------|------|------|
-| Agentic | Claude Code, Codex CLI | ~10 min |
-| Generative | ChatGPT, Copilot, Claude Desktop | ~20-30 min |
-| Manual | README instructions | ~30-45 min |
 
 ## Tech
 
 - **Frontend:** Vanilla HTML/CSS/JS. Zero framework, zero build step.
 - **AI:** Groq free tier (Llama models, 4-model cascade on rate limit)
-- **Hosting:** Netlify free tier
+- **Hosting:** Netlify free tier (static + one serverless function)
 - **Cost:** $0/month
 
-## Status
+## Full spec
 
-All planning reviews complete:
-
-| Review | Status |
-|--------|--------|
-| CEO / Strategy | CLEAR — scope expansion, proof cards, agent endpoint, multi-agent setup |
-| Engineering | CLEAR — XSS fix, CORS hardening, SSE chunk splitting, send cooldown |
-| Design | CLEAR — Linear design system, cards-first hierarchy, interaction states, a11y |
-| Mobile | CLEAR — 12 items for Product Hunt quality (skeleton, PWA, haptics, CLS) |
-
-**Next:** `/design-consultation` to create DESIGN.md, then implement.
-
-Full spec: [spec.md](spec.md) | Plan: [PLAN.md](PLAN.md)
+- [spec.md](spec.md) — design, architecture, mobile, and UX decisions. Single source of truth.
+- [CLAUDE.md](CLAUDE.md) — Claude Code setup wizard.
+- [SETUP-GUIDE.md](SETUP-GUIDE.md) — setup for ChatGPT, Claude Desktop, Copilot, Gemini.
 
 ## License
 
