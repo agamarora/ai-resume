@@ -211,17 +211,10 @@ const DEMO_BANNER_CSS = `
     }
     .demo-chip:active { transform: translateY(0); }
     .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-    .demo-chip-arrow {
-      font-size: 14px;
-      line-height: 1;
-      transition: transform 150ms ease-out;
-    }
-    .demo-chip:hover .demo-chip-arrow { transform: translateX(2px); }
     /* Hide CTA during intro animation (matches other header elements) */
     body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { height: 28px; font-size: 12px; padding: 0 12px; gap: 4px; }
-      .demo-chip-arrow { font-size: 13px; }
+      .demo-chip { height: 28px; font-size: 12px; padding: 0 12px; }
     }
 
     /* Modal overlay */
@@ -603,7 +596,7 @@ try {
     "{{DEMO_MODAL_HTML}}": config.demo_mode ? DEMO_MODAL_HTML : "",
     "{{DEMO_BANNER_JS}}": config.demo_mode ? DEMO_BANNER_JS : "",
     "{{DEMO_CHIP_HTML}}": config.demo_mode
-      ? `<button type="button" class="demo-chip" aria-label="Make your own AI resume using this template">Make yours <span class="demo-chip-arrow" aria-hidden="true">→</span></button>`
+      ? `<button type="button" class="demo-chip" aria-label="Make your own AI resume using this template">Make yours</button>`
       : "",
   };
 
