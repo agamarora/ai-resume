@@ -1,53 +1,77 @@
 {
   "@context": "https://schema.org",
   "@type": "Person",
-  "name": "Alex Chen",
-  "jobTitle": "Senior Product Designer",
-  "description": "Ask Alex's AI about her career in product design.",
+  "name": "Agam Arora",
+  "jobTitle": "AI Product Leader",
+  "description": "Ask Agam's AI about his career in AI products.",
   "knowsAbout": [
-    "Design Systems",
-    "Figma",
-    "Accessibility"
+    "AI Products",
+    "Voice AI",
+    "RAG",
+    "Agentic Systems",
+    "Data Platforms",
+    "Product Strategy"
   ],
   "sameAs": [
-    "https://linkedin.com/in/alexchen",
-    "mailto:alex@example.com"
+    "https://linkedin.com/in/agamarora",
+    "https://github.com/agamarora",
+    "mailto:agam.arora@aionos.ai"
   ],
   "ai-resume": {
     "version": "2.0",
     "availability": "open",
-    "contactPreference": "email",
+    "contactPreference": "linkedin",
     "chatEndpoint": "/.netlify/functions/groqHandler",
     "highlights": [
       {
-        "title": "Design System v3",
-        "metric": "400+ teams adopted",
-        "timeframe": "2022-Present"
+        "title": "Voice AI Platform",
+        "metric": "4M+ calls/year at 50% lower cost",
+        "timeframe": "2024-2025"
       },
       {
-        "title": "Checkout Redesign",
-        "metric": "+12% conversion lift",
-        "timeframe": "2019-2022"
+        "title": "ANALYZE Data Platform",
+        "metric": "$1M ARR in 18 months",
+        "timeframe": "2020-2024"
       },
       {
-        "title": "Component accessibility",
-        "metric": "WCAG AA across 40 flows",
-        "tag": "accessibility"
+        "title": "AI product POCs",
+        "metric": "$1.5M+ in enterprise deals from 15+ POCs",
+        "tag": "ai"
       },
       {
-        "title": "Onboarding redesign",
-        "metric": "45% → 72% completion",
-        "tag": "onboarding"
+        "title": "Data onboarding speed",
+        "metric": "60 → 7 days via API-first workflows",
+        "tag": "infra"
       },
       {
-        "title": "Design ops tooling",
-        "metric": "used by 80 designers",
-        "tag": "tools"
+        "title": "NPS lift at FarEye",
+        "metric": "3.6 → 4.7",
+        "tag": "product"
       },
       {
-        "title": "Collaborative whiteboard",
-        "metric": "2M+ monthly active users",
-        "tag": "collaboration"
+        "title": "GenAI no-code tool",
+        "metric": "30+ third-party services onboarded",
+        "tag": "ai"
+      },
+      {
+        "title": "AI-native CRM+CDP discovery",
+        "metric": "50+ stakeholder interviews",
+        "tag": "research"
+      },
+      {
+        "title": "V2 Games studio",
+        "metric": "$75K ARR, team of 18",
+        "tag": "entrepreneurship"
+      },
+      {
+        "title": "Franchise revamp at Aroma Magic",
+        "metric": "70% conversion, +INR 250K/account",
+        "tag": "growth"
+      },
+      {
+        "title": "Startup advisory",
+        "metric": "$500K+ in funds raised",
+        "tag": "advisory"
       }
     ]
   }
