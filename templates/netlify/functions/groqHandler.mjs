@@ -60,9 +60,13 @@ function corsHeaders(origin) {
 
 const INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions|prompts)/i,
-  /what\s+(is|are)\s+your\s+(system|initial)\s+(prompt|instructions)/i,
-  /reveal\s+your\s+(prompt|instructions|system)/i,
+  /(what|tell\s+me)\s+(is|are)?\s*your\s+(system|initial|exact)\s*(prompt|instructions)/i,
+  /reveal\s+your\s+(prompt|instructions|system|rules|setup)/i,
   /repeat\s+(the|your)\s+(above|system|initial)/i,
+  /(show|print|display|output)\s+(me\s+)?your\s+(prompt|instructions|system)/i,
+  /\bDAN\b|do\s+anything\s+now/i,
+  /(pretend|act|roleplay)\s+(you\s+are|as|like)/i,
+  /write\s+(me\s+)?(a\s+)?(poem|story|code|song|essay|joke|limerick)/i,
 ];
 
 function isInjectionAttempt(text) {
