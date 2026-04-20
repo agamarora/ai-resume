@@ -178,8 +178,190 @@ function generateManifestJson(config, palette) {
   };
 }
 
+const DEMO_PROMPT_TEXT = `I want to make a personal AI resume page using the ai-resume template at github.com/agamarora/ai-resume. Walk me through setup — ask about my career, generate the config files, help me deploy to Netlify. Push hard for quantified metrics (numbers, percentages, outcomes).`;
+
 const DEMO_BANNER_CSS = `
-    /* Demo banner — only injected when demo_mode=true */
+    /* Demo banner + header chip + modal — only injected when demo_mode=true */
+    .demo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px 3px 8px;
+      height: 22px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-25);
+      background: var(--accent-08);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-decoration: none;
+      flex-shrink: 0;
+      transition: background 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+    .demo-chip:hover { background: var(--accent-15); border-color: var(--accent); }
+    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .demo-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: demoChipPulse 2s ease-in-out infinite;
+    }
+    @keyframes demoChipPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    @media (max-width: 480px) {
+      .demo-chip { font-size: 10px; padding: 2px 8px 2px 6px; height: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .demo-chip-dot { animation: none; }
+    }
+
+    /* Modal overlay */
+    .demo-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease-out;
+    }
+    .demo-modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .demo-modal {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px 24px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      transform: translateY(12px) scale(0.98);
+      transition: transform 180ms ease-out;
+    }
+    .demo-modal-overlay.open .demo-modal { transform: translateY(0) scale(1); }
+    .demo-modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 36px;
+      height: 36px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 0;
+      touch-action: manipulation;
+      line-height: 1;
+    }
+    .demo-modal-close:hover { background: var(--accent-06); color: var(--text); }
+    .demo-modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .demo-modal h2 {
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin: 0 0 6px;
+      padding-right: 32px;
+    }
+    .demo-modal-intro {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin: 0 0 14px;
+      letter-spacing: -0.005em;
+    }
+    .demo-modal-prompt {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 14px 48px 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--text);
+      margin: 0 0 14px;
+      font-family: ui-monospace, "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .demo-modal-copy {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      min-height: 32px;
+      padding: 6px 14px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: manipulation;
+      font-family: inherit;
+      letter-spacing: -0.005em;
+      transition: opacity 150ms ease-out, transform 100ms ease-out;
+    }
+    .demo-modal-copy:hover { opacity: 0.9; }
+    .demo-modal-copy:active { transform: scale(0.97); }
+    .demo-modal-copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .demo-modal-tools {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin: 0 0 18px;
+    }
+    .demo-modal-tools strong { color: var(--text); font-weight: 500; }
+    .demo-modal-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: var(--bg);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      transition: opacity 150ms ease-out;
+      touch-action: manipulation;
+    }
+    .demo-modal-cta:hover { opacity: 0.9; }
+    .demo-modal-cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    body.intro-active .demo-modal-overlay { display: none; }
+    @media (max-width: 480px) {
+      .demo-modal { padding: 24px 16px 20px; border-radius: 10px; }
+      .demo-modal h2 { font-size: 17px; }
+      .demo-modal-intro { font-size: 13px; }
+      .demo-modal-prompt { font-size: 12.5px; padding: 12px 12px 44px; }
+      .demo-modal-cta { width: 100%; justify-content: center; }
+    }
+
     .demo-banner {
       display: flex;
       align-items: center;
@@ -195,13 +377,24 @@ const DEMO_BANNER_CSS = `
       letter-spacing: -0.005em;
     }
     .demo-banner strong { font-weight: 600; color: var(--text); }
-    .demo-banner a {
+    .demo-banner a,
+    .demo-banner-link {
       color: var(--accent);
       text-decoration: none;
       font-weight: 500;
       margin-left: 4px;
     }
-    .demo-banner a:hover { text-decoration: underline; }
+    .demo-banner-link {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .demo-banner a:hover,
+    .demo-banner-link:hover { text-decoration: underline; }
+    .demo-banner-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
     .demo-banner-close {
       position: absolute;
       right: 4px;
@@ -230,23 +423,83 @@ const DEMO_BANNER_CSS = `
     }`;
 
 const DEMO_BANNER_HTML = `<div class="demo-banner" id="demo-banner" role="note">
-    <span>👋 Demo of the <strong>ai-resume</strong> template <a href="https://github.com/agamarora/ai-resume" target="_blank" rel="noopener noreferrer">Make your own →</a></span>
+    <span>👋 Demo of the <strong>ai-resume</strong> template <button type="button" class="demo-banner-link" id="demo-banner-link">Make your own →</button></span>
     <button class="demo-banner-close" id="demo-banner-close" aria-label="Dismiss demo banner" type="button">✕</button>
+  </div>`;
+
+const DEMO_MODAL_HTML = `<div class="demo-modal-overlay" id="demo-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title" aria-hidden="true">
+    <div class="demo-modal" role="document">
+      <button class="demo-modal-close" id="demo-modal-close" aria-label="Close dialog" type="button">✕</button>
+      <h2 id="demo-modal-title">Make your own AI resume</h2>
+      <p class="demo-modal-intro">Paste this into Claude Code, Codex CLI, ChatGPT, Claude Desktop, Copilot, or any AI assistant. It will walk you through setup and deploy.</p>
+      <div class="demo-modal-prompt" id="demo-modal-prompt-text">${DEMO_PROMPT_TEXT}<button class="demo-modal-copy" id="demo-modal-copy" type="button" aria-label="Copy prompt to clipboard">Copy</button></div>
+      <p class="demo-modal-tools">Setup takes <strong>~30 minutes</strong>. Works with any AI that can read and write files. $0/month to host.</p>
+      <a class="demo-modal-cta" href="https://github.com/agamarora/ai-resume" target="_blank" rel="noopener noreferrer">View template on GitHub →</a>
+    </div>
   </div>`;
 
 const DEMO_BANNER_JS = `(function demoBanner() {
       const banner = document.getElementById("demo-banner");
-      if (!banner) return;
-      try {
-        if (localStorage.getItem("ai-resume-demo-dismissed") === "1") {
+      const overlay = document.getElementById("demo-modal-overlay");
+      const chip = document.querySelector(".demo-chip");
+
+      // Banner dismiss (sessionStorage so banner returns in new sessions)
+      if (banner) {
+        try {
+          if (sessionStorage.getItem("ai-resume-demo-dismissed") === "1") {
+            banner.classList.add("dismissed");
+          }
+        } catch (e) {}
+        document.getElementById("demo-banner-close")?.addEventListener("click", () => {
           banner.classList.add("dismissed");
-          return;
+          try { sessionStorage.setItem("ai-resume-demo-dismissed", "1"); } catch (e) {}
+        });
+      }
+
+      // Modal open/close
+      if (!overlay) return;
+      let lastFocus = null;
+      const close = () => {
+        overlay.classList.remove("open");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        lastFocus?.focus?.();
+      };
+      const open = (source) => {
+        lastFocus = source || document.activeElement;
+        overlay.classList.add("open");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => document.getElementById("demo-modal-close")?.focus(), 50);
+      };
+
+      chip?.addEventListener("click", (e) => { e.preventDefault(); open(chip); });
+      document.getElementById("demo-banner-link")?.addEventListener("click", (e) => { e.preventDefault(); open(e.currentTarget); });
+      document.getElementById("demo-modal-close")?.addEventListener("click", close);
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && overlay.classList.contains("open")) close();
+      });
+
+      // Copy prompt to clipboard
+      const copyBtn = document.getElementById("demo-modal-copy");
+      const promptEl = document.getElementById("demo-modal-prompt-text");
+      copyBtn?.addEventListener("click", async () => {
+        // Extract prompt text (first text node, excluding the Copy button)
+        const text = Array.from(promptEl.childNodes)
+          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          .map((n) => n.textContent)
+          .join("")
+          .trim();
+        try {
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = "Copied ✓";
+          navigator.vibrate?.([10]);
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 1800);
+        } catch (err) {
+          copyBtn.textContent = "Failed";
+          setTimeout(() => { copyBtn.textContent = "Copy"; }, 1800);
         }
-      } catch (e) {}
-      const btn = document.getElementById("demo-banner-close");
-      btn?.addEventListener("click", () => {
-        banner.classList.add("dismissed");
-        try { localStorage.setItem("ai-resume-demo-dismissed", "1"); } catch (e) {}
       });
     })();
 `;
@@ -345,7 +598,11 @@ try {
     "{{ALLOWED_ORIGINS}}": originUrl,
     "{{DEMO_BANNER_CSS}}": config.demo_mode ? DEMO_BANNER_CSS : "",
     "{{DEMO_BANNER_HTML}}": config.demo_mode ? DEMO_BANNER_HTML : "",
+    "{{DEMO_MODAL_HTML}}": config.demo_mode ? DEMO_MODAL_HTML : "",
     "{{DEMO_BANNER_JS}}": config.demo_mode ? DEMO_BANNER_JS : "",
+    "{{DEMO_CHIP_HTML}}": config.demo_mode
+      ? `<button type="button" class="demo-chip" aria-label="This is a demo of the ai-resume template. Click to make your own."><span class="demo-chip-dot" aria-hidden="true"></span>demo</button>`
+      : "",
   };
 
   // 7. Apply replacements in memory
