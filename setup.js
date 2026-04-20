@@ -178,6 +178,79 @@ function generateManifestJson(config, palette) {
   };
 }
 
+const DEMO_BANNER_CSS = `
+    /* Demo banner — only injected when demo_mode=true */
+    .demo-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 40px 8px 16px;
+      background: var(--accent-08);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text);
+      flex-shrink: 0;
+      position: relative;
+      line-height: 1.4;
+      letter-spacing: -0.005em;
+    }
+    .demo-banner strong { font-weight: 600; color: var(--text); }
+    .demo-banner a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .demo-banner a:hover { text-decoration: underline; }
+    .demo-banner-close {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border-radius: 4px;
+      touch-action: manipulation;
+      padding: 0;
+      line-height: 1;
+    }
+    .demo-banner-close:hover { color: var(--text); background: var(--accent-04); }
+    .demo-banner.dismissed { display: none; }
+    body.intro-active .demo-banner { display: none; }
+    @media (max-width: 480px) {
+      .demo-banner { font-size: 12px; padding: 6px 36px 6px 12px; justify-content: flex-start; text-align: left; }
+    }`;
+
+const DEMO_BANNER_HTML = `<div class="demo-banner" id="demo-banner" role="note">
+    <span>👋 Demo of the <strong>ai-resume</strong> template <a href="https://github.com/agamarora/ai-resume" target="_blank" rel="noopener noreferrer">Make your own →</a></span>
+    <button class="demo-banner-close" id="demo-banner-close" aria-label="Dismiss demo banner" type="button">✕</button>
+  </div>`;
+
+const DEMO_BANNER_JS = `(function demoBanner() {
+      const banner = document.getElementById("demo-banner");
+      if (!banner) return;
+      try {
+        if (localStorage.getItem("ai-resume-demo-dismissed") === "1") {
+          banner.classList.add("dismissed");
+          return;
+        }
+      } catch (e) {}
+      const btn = document.getElementById("demo-banner-close");
+      btn?.addEventListener("click", () => {
+        banner.classList.add("dismissed");
+        try { localStorage.setItem("ai-resume-demo-dismissed", "1"); } catch (e) {}
+      });
+    })();
+`;
+
 function generateOgDescription(config) {
   const firstName = config.name.split(" ")[0];
   const top = config.resume?.welcome_highlights?.[0];
@@ -270,6 +343,9 @@ try {
     "{{JSONLD_BLOCK}}": jsonLdBlock,
     "{{FULL_HIGHLIGHTS_MARKDOWN}}": fullHighlightsMd,
     "{{ALLOWED_ORIGINS}}": originUrl,
+    "{{DEMO_BANNER_CSS}}": config.demo_mode ? DEMO_BANNER_CSS : "",
+    "{{DEMO_BANNER_HTML}}": config.demo_mode ? DEMO_BANNER_HTML : "",
+    "{{DEMO_BANNER_JS}}": config.demo_mode ? DEMO_BANNER_JS : "",
   };
 
   // 7. Apply replacements in memory
@@ -323,7 +399,7 @@ try {
   console.log(`   Name: ${name}`);
   console.log(`   Palette: ${config.palette === "custom" ? "Custom" : palettes[config.palette].name}`);
   console.log(`   Domain: ${domain}`);
-  console.log(`\n   ✓ index.html (${whCount} welcome cards, JSON-LD, connect icons)`);
+  console.log(`\n   ✓ index.html (${whCount} welcome cards, JSON-LD, connect icons${config.demo_mode ? ", demo banner" : ""})`);
   console.log(`   ✓ netlify/functions/groqHandler.mjs (CORS: ${originUrl})`);
   console.log(`   ✓ system-prompt.md (${fhCount} full highlights embedded)`);
   console.log(`   ✓ ai-resume.json (/.well-known/ endpoint)`);

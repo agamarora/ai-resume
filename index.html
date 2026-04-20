@@ -494,6 +494,65 @@
       .suggestion-chip:hover { border-color: var(--border); color: var(--text-dim); background: transparent; }
       .msg.assistant .msg-actions { opacity: 1; }
     }
+
+    /* Desktop: center a max-width content column (no sidebar = stretch would look bad on 2K+).
+       Padding uses max() so existing mobile/tablet padding is preserved and calc only kicks in
+       when viewport is wider than content max-width. Borders + banner stay full-bleed. */
+    @media (min-width: 769px) {
+      .chat-header  { padding-left: max(16px, calc(50% - 360px)); padding-right: max(16px, calc(50% - 360px)); }
+      .messages     { padding-left: max(20px, calc(50% - 360px)); padding-right: max(20px, calc(50% - 360px)); }
+      .input-area   { padding-left: max(12px, calc(50% - 360px)); padding-right: max(12px, calc(50% - 360px)); }
+    }
+    
+    /* Demo banner — only injected when demo_mode=true */
+    .demo-banner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 40px 8px 16px;
+      background: var(--accent-08);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text);
+      flex-shrink: 0;
+      position: relative;
+      line-height: 1.4;
+      letter-spacing: -0.005em;
+    }
+    .demo-banner strong { font-weight: 600; color: var(--text); }
+    .demo-banner a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 4px;
+    }
+    .demo-banner a:hover { text-decoration: underline; }
+    .demo-banner-close {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      border-radius: 4px;
+      touch-action: manipulation;
+      padding: 0;
+      line-height: 1;
+    }
+    .demo-banner-close:hover { color: var(--text); background: var(--accent-04); }
+    .demo-banner.dismissed { display: none; }
+    body.intro-active .demo-banner { display: none; }
+    @media (max-width: 480px) {
+      .demo-banner { font-size: 12px; padding: 6px 36px 6px 12px; justify-content: flex-start; text-align: left; }
+    }
   </style>
   <script type="application/ld+json">
 {
@@ -516,6 +575,10 @@
 </head>
 <body class="intro-active">
   <a href="#input" class="skip-link">Skip to input</a>
+  <div class="demo-banner" id="demo-banner" role="note">
+    <span>👋 Demo of the <strong>ai-resume</strong> template <a href="https://github.com/agamarora/ai-resume" target="_blank" rel="noopener noreferrer">Make your own →</a></span>
+    <button class="demo-banner-close" id="demo-banner-close" aria-label="Dismiss demo banner" type="button">✕</button>
+  </div>
   <header class="chat-header">
     <span class="mark" aria-hidden="true">ac</span>
     <h1>Alex Chen</h1>
@@ -559,6 +622,22 @@
   </div>
 
   <script>
+    (function demoBanner() {
+      const banner = document.getElementById("demo-banner");
+      if (!banner) return;
+      try {
+        if (localStorage.getItem("ai-resume-demo-dismissed") === "1") {
+          banner.classList.add("dismissed");
+          return;
+        }
+      } catch (e) {}
+      const btn = document.getElementById("demo-banner-close");
+      btn?.addEventListener("click", () => {
+        banner.classList.add("dismissed");
+        try { localStorage.setItem("ai-resume-demo-dismissed", "1"); } catch (e) {}
+      });
+    })();
+
     // === INTRO ANIMATION (stroke-draw mark → fly to header) ===
     (function runMarkIntro() {
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
