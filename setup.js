@@ -181,45 +181,47 @@ function generateManifestJson(config, palette) {
 const DEMO_PROMPT_TEXT = `I want to make a personal AI resume page using the ai-resume template at github.com/agamarora/ai-resume. Walk me through setup — ask about my career, generate the config files, help me deploy to Netlify. Push hard for quantified metrics (numbers, percentages, outcomes).`;
 
 const DEMO_BANNER_CSS = `
-    /* Demo banner + header chip + modal — only injected when demo_mode=true */
+    /* Demo banner + header CTA + modal — only injected when demo_mode=true */
+    /* CTA is the primary conversion surface — solid accent, pill, lift on hover */
     .demo-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 3px 10px 3px 8px;
-      height: 22px;
+      padding: 0 14px;
+      height: 30px;
       border-radius: 999px;
-      border: 1px solid var(--accent-25);
-      background: var(--accent-08);
-      color: var(--accent);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      text-decoration: none;
-      flex-shrink: 0;
-      transition: background 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out;
-      touch-action: manipulation;
-      cursor: pointer;
-    }
-    .demo-chip:hover { background: var(--accent-15); border-color: var(--accent); }
-    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .demo-chip-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
+      border: none;
       background: var(--accent);
-      animation: demoChipPulse 2s ease-in-out infinite;
+      color: var(--bg);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+      text-decoration: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      touch-action: manipulation;
+      font-family: inherit;
+      box-shadow: 0 0 0 1px var(--accent), 0 4px 14px -6px var(--accent);
+      transition: transform 120ms ease-out, box-shadow 180ms ease-out;
     }
-    @keyframes demoChipPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+    .demo-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 0 1px var(--accent), 0 8px 20px -6px var(--accent);
     }
+    .demo-chip:active { transform: translateY(0); }
+    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .demo-chip-arrow {
+      font-size: 14px;
+      line-height: 1;
+      transition: transform 150ms ease-out;
+    }
+    .demo-chip:hover .demo-chip-arrow { transform: translateX(2px); }
+    /* Hide CTA during intro animation (matches other header elements) */
+    body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { font-size: 10px; padding: 2px 8px 2px 6px; height: 20px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .demo-chip-dot { animation: none; }
+      .demo-chip { height: 28px; font-size: 12px; padding: 0 12px; gap: 4px; }
+      .demo-chip-arrow { font-size: 13px; }
     }
 
     /* Modal overlay */
@@ -601,7 +603,7 @@ try {
     "{{DEMO_MODAL_HTML}}": config.demo_mode ? DEMO_MODAL_HTML : "",
     "{{DEMO_BANNER_JS}}": config.demo_mode ? DEMO_BANNER_JS : "",
     "{{DEMO_CHIP_HTML}}": config.demo_mode
-      ? `<button type="button" class="demo-chip" aria-label="This is a demo of the ai-resume template. Click to make your own."><span class="demo-chip-dot" aria-hidden="true"></span>demo</button>`
+      ? `<button type="button" class="demo-chip" aria-label="Make your own AI resume using this template">Make yours <span class="demo-chip-arrow" aria-hidden="true">→</span></button>`
       : "",
   };
 
