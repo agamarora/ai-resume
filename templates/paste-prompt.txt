@@ -1,0 +1,9 @@
+I want to build my own AI resume page using the ai-resume template at github.com/agamarora/ai-resume.
+
+Please do the following, in order:
+1. Read the repo's CLAUDE.md. It's a setup wizard for this template — follow it.
+2. Walk me through step 1 (resume) first. Ask me about my career. Push hard for quantified impacts (numbers, percentages, outcomes). Critique vague bullets before moving on.
+3. Then step 2 (AI personality), step 3 (API key — I have a Groq key ready), step 4 (highlights), step 5 (config), step 6 (eval-in-a-loop — keep tuning the prompt until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds).
+4. Then deploy to Netlify.
+
+I'm on my machine, in the cloned template folder. Node 18+, git bash available. Ask before you do anything destructive.
