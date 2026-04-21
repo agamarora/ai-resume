@@ -99,12 +99,18 @@
     }
     .chat-header .mark-small {
       font-family: "Patrick Hand", "Inter", cursive;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--text);
       font-weight: 400;
       line-height: 1;
       flex: 1;
       min-width: 0;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      /* Patrick Hand glyphs sit optically slightly ABOVE baseline;
+         nudge down a touch so the letters line up with icon centers. */
+      padding-top: 3px;
     }
     .chat-header .mark-small::after {
       content: '.';
@@ -123,15 +129,22 @@
     }
     .welcome-hero .mark-big {
       font-family: "Patrick Hand", "Inter", cursive;
-      font-size: 72px;
+      font-size: 64px;
       line-height: 1;
       color: var(--text);
       font-weight: 400;
-      padding: 6px 18px 4px;
+      width: 104px;
+      height: 104px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--surface);
       letter-spacing: -0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      /* Patrick Hand optical baseline sits slightly high inside its em-box;
+         nudge down so the glyph sits in the visual center of the container. */
+      padding-top: 6px;
     }
     .welcome-hero .mark-big::after {
       content: '.';
@@ -163,7 +176,7 @@
       opacity: 0.85;
     }
     @media (max-width: 640px) {
-      .welcome-hero .mark-big { font-size: 56px; padding: 4px 14px 2px; }
+      .welcome-hero .mark-big { font-size: 52px; width: 88px; height: 88px; padding-top: 5px; }
       .welcome-hero .hero-name { font-size: 24px; }
       .welcome-hero .hero-tagline { font-size: 17px; max-width: 28ch; }
     }
@@ -569,15 +582,16 @@
     }
     
     /* Demo banner + header CTA + modal — only injected when demo_mode=true */
-    /* CTA is meta-content (fork-this-template). Ghost button style so it does
-       not beat the user's name + content for attention. */
+    /* CTA is meta-content (fork-this-template). Ghost button style with 6px
+       radius to match cards / icons / input — single radius language. */
     .demo-chip {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       padding: 0 12px;
-      height: 28px;
-      border-radius: 999px;
+      height: 32px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text-dim);
@@ -602,7 +616,7 @@
     /* Hide CTA during intro animation (matches other header elements) */
     body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { height: 26px; font-size: 11px; padding: 0 10px; }
+      .demo-chip { height: 30px; font-size: 11px; padding: 0 10px; }
     }
 
     /* Modal overlay */

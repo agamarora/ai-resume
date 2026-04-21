@@ -193,15 +193,16 @@ const DEMO_PROMPT_TEXT = `I want to make a personal AI resume page using the ai-
 
 const DEMO_BANNER_CSS = `
     /* Demo banner + header CTA + modal — only injected when demo_mode=true */
-    /* CTA is meta-content (fork-this-template). Ghost button style so it does
-       not beat the user's name + content for attention. */
+    /* CTA is meta-content (fork-this-template). Ghost button style with 6px
+       radius to match cards / icons / input — single radius language. */
     .demo-chip {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       padding: 0 12px;
-      height: 28px;
-      border-radius: 999px;
+      height: 32px;
+      border-radius: 6px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text-dim);
@@ -226,7 +227,7 @@ const DEMO_BANNER_CSS = `
     /* Hide CTA during intro animation (matches other header elements) */
     body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { height: 26px; font-size: 11px; padding: 0 10px; }
+      .demo-chip { height: 30px; font-size: 11px; padding: 0 10px; }
     }
 
     /* Modal overlay */

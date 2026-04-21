@@ -87,12 +87,18 @@
     }
     .chat-header .mark-small {
       font-family: "Patrick Hand", "Inter", cursive;
-      font-size: 22px;
+      font-size: 24px;
       color: var(--text);
       font-weight: 400;
       line-height: 1;
       flex: 1;
       min-width: 0;
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      /* Patrick Hand glyphs sit optically slightly ABOVE baseline;
+         nudge down a touch so the letters line up with icon centers. */
+      padding-top: 3px;
     }
     .chat-header .mark-small::after {
       content: '.';
@@ -111,15 +117,22 @@
     }
     .welcome-hero .mark-big {
       font-family: "Patrick Hand", "Inter", cursive;
-      font-size: 72px;
+      font-size: 64px;
       line-height: 1;
       color: var(--text);
       font-weight: 400;
-      padding: 6px 18px 4px;
+      width: 104px;
+      height: 104px;
       border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--surface);
       letter-spacing: -0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      /* Patrick Hand optical baseline sits slightly high inside its em-box;
+         nudge down so the glyph sits in the visual center of the container. */
+      padding-top: 6px;
     }
     .welcome-hero .mark-big::after {
       content: '.';
@@ -151,7 +164,7 @@
       opacity: 0.85;
     }
     @media (max-width: 640px) {
-      .welcome-hero .mark-big { font-size: 56px; padding: 4px 14px 2px; }
+      .welcome-hero .mark-big { font-size: 52px; width: 88px; height: 88px; padding-top: 5px; }
       .welcome-hero .hero-name { font-size: 24px; }
       .welcome-hero .hero-tagline { font-size: 17px; max-width: 28ch; }
     }
