@@ -1,0 +1,12 @@
+I want my own AI resume page. Use the template at github.com/agamarora/ai-resume.
+
+Do everything for me:
+
+1. Create a new GitHub repo for me from that template (use `gh repo create --template agamarora/ai-resume --public <repo-name>`). Pick a sensible default name from my GitHub username or ask me one question if you need to.
+2. Scaffold it locally in ~/ai-resume (or wherever I already am if it makes sense).
+3. Read the repo's CLAUDE.md. It's the setup wizard — follow it start to finish.
+4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds.
+5. Deploy to Netlify. Set the GROQ_API_KEY env var in the Netlify dashboard too.
+6. Give me the live URL at the end.
+
+I'll answer your questions. Ask before anything destructive. I'm on a laptop with Node 18+, gh CLI, and git installed.

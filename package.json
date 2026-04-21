@@ -11,7 +11,8 @@
     "eval": "node eval-prompt.mjs",
     "check-models": "node scripts/check-models.mjs",
     "doctor": "node scripts/doctor.mjs",
-    "sync-readme": "node scripts/sync-readme-prompt.mjs"
+    "sync-readme": "node scripts/sync-readme-prompt.mjs",
+    "eval-seed-prompt": "node tests/seed-prompt-eval/run.mjs"
   },
   "dependencies": {
     "groq-sdk": "~1.1.2"

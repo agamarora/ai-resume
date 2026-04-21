@@ -11,3 +11,5 @@ node_modules/
 .claude/
 .design-preview.html
 .context/retros/
+tests/seed-prompt-eval/results/run-*.json
+tests/seed-prompt-eval/results/run-*.md
