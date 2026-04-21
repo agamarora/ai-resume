@@ -127,24 +127,18 @@
       gap: 14px;
       padding-bottom: 8px;
     }
+    /* Brand mark stands alone — no container box. Cursive font metrics
+       make any box look off-center regardless of padding tricks, and
+       Linear / Stripe / Vercel all use freestanding logomarks with no box.
+       Bigger glyph compensates for the lost visual weight of the container. */
     .welcome-hero .mark-big {
       font-family: "Patrick Hand", "Inter", cursive;
-      font-size: 64px;
-      line-height: 1;
+      font-size: 96px;
+      line-height: 0.9;
       color: var(--text);
       font-weight: 400;
-      width: 104px;
-      height: 104px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface);
-      letter-spacing: -0.02em;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      /* Patrick Hand optical baseline sits slightly high inside its em-box;
-         nudge down so the glyph sits in the visual center of the container. */
-      padding-top: 6px;
+      letter-spacing: -0.03em;
+      display: inline-block;
     }
     .welcome-hero .mark-big::after {
       content: '.';
@@ -176,7 +170,7 @@
       opacity: 0.85;
     }
     @media (max-width: 640px) {
-      .welcome-hero .mark-big { font-size: 52px; width: 88px; height: 88px; padding-top: 5px; }
+      .welcome-hero .mark-big { font-size: 72px; }
       .welcome-hero .hero-name { font-size: 24px; }
       .welcome-hero .hero-tagline { font-size: 17px; max-width: 28ch; }
     }
