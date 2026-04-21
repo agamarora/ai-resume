@@ -86,40 +86,86 @@
       outline: none;
     }
 
-    /* Header */
+    /* Header — slim persistent nav. Name lives in the welcome hero, not here,
+       so the mobile truncation and the demo-CTA-beats-name hierarchy both go away. */
     .chat-header {
       flex-shrink: 0;
-      padding: 12px 16px;
-      padding-top: max(12px, env(safe-area-inset-top));
+      padding: 10px 16px;
+      padding-top: max(10px, env(safe-area-inset-top));
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .mark {
+    .chat-header .mark-small {
       font-family: "Patrick Hand", "Inter", cursive;
       font-size: 22px;
       color: var(--text);
       font-weight: 400;
-      letter-spacing: 0;
       line-height: 1;
-      position: relative;
-      display: inline-block;
+      flex: 1;
+      min-width: 0;
     }
-    .mark::after {
+    .chat-header .mark-small::after {
       content: '.';
       color: var(--accent);
       margin-left: 1px;
     }
-    .chat-header h1 {
-      font-size: 16px;
-      font-weight: 600;
+    /* Welcome hero — fills the top half of the viewport with identity instead
+       of black void. Only rendered in the welcome state. */
+    .welcome-hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 8px;
+    }
+    .welcome-hero .mark-big {
+      font-family: "Patrick Hand", "Inter", cursive;
+      font-size: 72px;
+      line-height: 1;
+      color: var(--text);
+      font-weight: 400;
+      padding: 6px 18px 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
       letter-spacing: -0.02em;
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    }
+    .welcome-hero .mark-big::after {
+      content: '.';
+      color: var(--accent);
+      margin-left: 2px;
+    }
+    .welcome-hero .hero-name {
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin: 4px 0 0;
+      line-height: 1.1;
+    }
+    .welcome-hero .hero-role {
+      font-size: 14px;
+      color: var(--text-dim);
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .welcome-hero .hero-tagline {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      max-width: 32ch;
+      margin: 6px 0 0;
+      opacity: 0.85;
+    }
+    @media (max-width: 640px) {
+      .welcome-hero .mark-big { font-size: 56px; padding: 4px 14px 2px; }
+      .welcome-hero .hero-name { font-size: 24px; }
+      .welcome-hero .hero-tagline { font-size: 17px; max-width: 28ch; }
     }
     .connect-icons {
       display: flex;
@@ -232,17 +278,21 @@
     .card:hover::after { opacity: 1; border-color: var(--accent); right: 12px; }
     .card:active::after { opacity: 1; border-color: var(--accent); }
 
+    /* Cards: title wins hierarchy (it's the project — the proof noun).
+       Metric is supporting context, still readable, same color family. */
     .card-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
-    .card-metric {
       font-size: 15px;
       font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    .card-metric {
+      font-size: 13px;
+      font-weight: 500;
       color: var(--accent);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.005em;
+      opacity: 0.9;
     }
 
     .cards.faded .card { opacity: 0.5; }
@@ -372,12 +422,14 @@
     .retry-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .retry-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* Input area */
+    /* Input area — subtle surface bg grounds the chat input so it doesn't
+       float in a black void. Top border keeps it anchored to the viewport. */
     .input-area {
       flex-shrink: 0;
       padding: 12px 16px;
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       border-top: 1px solid var(--border);
+      background: linear-gradient(to bottom, transparent, var(--surface) 40%);
       display: flex;
       align-items: flex-end;
       gap: 8px;
@@ -423,7 +475,7 @@
     .send-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     /* ============== INTRO ANIMATION (mark stroke-draw → fly to header) ============== */
-    .chat-header h1,
+    .chat-header .mark-small,
     .chat-header .connect-icons,
     .messages,
     .input-area {
@@ -432,13 +484,18 @@
     .chat-header {
       transition: border-bottom-color 300ms ease-out;
     }
-    body.intro-active .chat-header .mark,
-    body.intro-active .chat-header h1,
+    body.intro-active .chat-header .mark-small,
     body.intro-active .chat-header .connect-icons,
+    body.intro-active .chat-header .demo-chip,
     body.intro-active .messages,
     body.intro-active .input-area {
       opacity: 0;
     }
+    /* Welcome hero only in welcome state; gone once a message exists */
+    .messages:has(.msg) .welcome-hero { display: none; }
+    /* Fade the hero slightly when cards fade (post first interaction) */
+    .cards.faded ~ .welcome-hero,
+    .welcome-hero:has(~ .cards.faded) { opacity: 0.6; }
     body.intro-active .chat-header {
       border-bottom-color: transparent;
     }
@@ -512,19 +569,20 @@
     }
     
     /* Demo banner + header CTA + modal — only injected when demo_mode=true */
-    /* CTA is the primary conversion surface — solid accent, pill, lift on hover */
+    /* CTA is meta-content (fork-this-template). Ghost button style so it does
+       not beat the user's name + content for attention. */
     .demo-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 0 14px;
-      height: 30px;
+      padding: 0 12px;
+      height: 28px;
       border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: var(--bg);
-      font-size: 13px;
-      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 500;
       letter-spacing: -0.005em;
       white-space: nowrap;
       text-decoration: none;
@@ -532,19 +590,19 @@
       flex-shrink: 0;
       touch-action: manipulation;
       font-family: inherit;
-      box-shadow: 0 0 0 1px var(--accent), 0 4px 14px -6px var(--accent);
-      transition: transform 120ms ease-out, box-shadow 180ms ease-out;
+      transition: border-color 150ms ease-out, color 150ms ease-out, background 150ms ease-out;
     }
     .demo-chip:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 0 1px var(--accent), 0 8px 20px -6px var(--accent);
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-06);
     }
-    .demo-chip:active { transform: translateY(0); }
-    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .demo-chip:active { transform: scale(0.98); }
+    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     /* Hide CTA during intro animation (matches other header elements) */
     body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { height: 28px; font-size: 12px; padding: 0 12px; }
+      .demo-chip { height: 26px; font-size: 11px; padding: 0 10px; }
     }
 
     /* Modal overlay */
@@ -741,7 +799,7 @@
   "@context": "https://schema.org",
   "@type": "Person",
   "name": "Agam Arora",
-  "jobTitle": "AI Product Leader",
+  "jobTitle": "AVP AI Products · AIonOS",
   "description": "Ask Agam's AI about his career in AI products.",
   "knowsAbout": [
     "AI Products",
@@ -766,8 +824,7 @@
     <button class="demo-banner-close" id="demo-banner-close" aria-label="Dismiss demo banner" type="button">✕</button>
   </div>
   <header class="chat-header">
-    <span class="mark" aria-hidden="true">aa</span>
-    <h1>Agam Arora</h1>
+    <span class="mark-small" aria-label="Agam Arora">aa</span>
     <button type="button" class="demo-chip" aria-label="Make your own AI resume using this template">Make yours</button>
       <div class="connect-icons">
     <a class="connect-icon" href="https://linkedin.com/in/agamarora" aria-label="Connect on LinkedIn" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.49 6S0 4.88 0 3.5 1.11 1 2.49 1s2.49 1.12 2.49 2.5zM.22 8h4.56v13H.22V8zm7.44 0h4.37v1.78h.06c.61-1.15 2.1-2.37 4.32-2.37 4.62 0 5.47 3.04 5.47 6.99V21h-4.56v-6.2c0-1.48-.03-3.39-2.07-3.39-2.07 0-2.39 1.62-2.39 3.28V21H7.66V8z"/></svg></a>
@@ -777,6 +834,12 @@
   </header>
 
   <main class="messages" id="messages" aria-live="polite" aria-label="Conversation with Agam's AI">
+    <section class="welcome-hero" id="welcome-hero" aria-label="About Agam Arora">
+      <span class="mark-big" aria-hidden="true">aa</span>
+      <h1 class="hero-name">Agam Arora</h1>
+      <p class="hero-role">AVP AI Products · AIonOS</p>
+      <p class="hero-tagline">builds AI products that ship.</p>
+    </section>
     <div class="cards" id="welcome-cards">
             <button type="button" class="card" role="article" aria-label="Career highlight: Voice AI Platform, 4M+ calls/year at 50% lower cost" data-title="Voice AI Platform">
         <span class="card-label">Voice AI Platform</span>
@@ -787,7 +850,7 @@
         <span class="card-metric">$1M ARR in 18 months</span>
       </button>
     </div>
-    <p class="welcome-text">ask me anything about Agam&#39;s career.</p>
+    <p class="welcome-text">ask me anything about his career.</p>
   </main>
 
   <div class="input-area">
@@ -891,7 +954,7 @@
       const alreadySeen = sessionStorage.getItem("ai-resume-intro-seen") === "1";
       const stage = document.getElementById("intro-stage");
       const svg = document.getElementById("intro-mark-svg");
-      const headerMark = document.querySelector(".chat-header .mark");
+      const headerMark = document.querySelector(".chat-header .mark-small");
 
       if (reduceMotion || alreadySeen || !stage || !svg || !headerMark) {
         document.body.classList.remove("intro-active");

@@ -193,19 +193,20 @@ const DEMO_PROMPT_TEXT = `I want to make a personal AI resume page using the ai-
 
 const DEMO_BANNER_CSS = `
     /* Demo banner + header CTA + modal — only injected when demo_mode=true */
-    /* CTA is the primary conversion surface — solid accent, pill, lift on hover */
+    /* CTA is meta-content (fork-this-template). Ghost button style so it does
+       not beat the user's name + content for attention. */
     .demo-chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 0 14px;
-      height: 30px;
+      padding: 0 12px;
+      height: 28px;
       border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: var(--bg);
-      font-size: 13px;
-      font-weight: 600;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 500;
       letter-spacing: -0.005em;
       white-space: nowrap;
       text-decoration: none;
@@ -213,19 +214,19 @@ const DEMO_BANNER_CSS = `
       flex-shrink: 0;
       touch-action: manipulation;
       font-family: inherit;
-      box-shadow: 0 0 0 1px var(--accent), 0 4px 14px -6px var(--accent);
-      transition: transform 120ms ease-out, box-shadow 180ms ease-out;
+      transition: border-color 150ms ease-out, color 150ms ease-out, background 150ms ease-out;
     }
     .demo-chip:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 0 1px var(--accent), 0 8px 20px -6px var(--accent);
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-06);
     }
-    .demo-chip:active { transform: translateY(0); }
-    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .demo-chip:active { transform: scale(0.98); }
+    .demo-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     /* Hide CTA during intro animation (matches other header elements) */
     body.intro-active .chat-header .demo-chip { opacity: 0; pointer-events: none; }
     @media (max-width: 480px) {
-      .demo-chip { height: 28px; font-size: 12px; padding: 0 12px; }
+      .demo-chip { height: 26px; font-size: 11px; padding: 0 10px; }
     }
 
     /* Modal overlay */
@@ -575,6 +576,13 @@ try {
       .join("\n      "),
     "{{HERO_NAME}}": escapeHtml(name),
     "{{FIRST_NAME}}": escapeHtml(firstName),
+    "{{HERO_ROLE}}": escapeHtml(config.title || ""),
+    "{{TAGLINE}}": escapeHtml(
+      config.tagline ||
+      (resume.welcome_highlights?.[0]
+        ? `shipped ${resume.welcome_highlights[0].title.toLowerCase()} — ${resume.welcome_highlights[0].metric}.`
+        : `${firstName}'s career, answered.`)
+    ),
     "{{MARK_INITIALS}}": escapeHtml(config.initials),
     "{{WELCOME_MESSAGE}}": escapeHtml(config.welcome_message || `ask me anything about ${firstName}'s career.`),
     "{{PLACEHOLDER_TEXT}}": escapeHtml(config.placeholder_text || `Ask me about ${firstName}...`),
