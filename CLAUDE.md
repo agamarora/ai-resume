@@ -109,11 +109,13 @@ resume.md ──[Any AI assistant]──→ system-prompt.md
 
 When a user opens Claude Code in this repo and asks to set up their resume, you ARE the wizard. This is not a linear form. It's a coaching loop — draft, critique, refine. The portfolio differentiator of this template is showing the AI-coding-fluent workflow live. Do not hide it behind a clean UX. Show the iterations. Make the loop visible.
 
-### Fresh-clone checklist (run BEFORE step 1)
+### Pre-wizard checklist (run BEFORE step 1)
 
-Before you ask the user anything, run `npm run doctor`. It checks Node ≥ 18, the `.env`, `setup-config.json`, the `system-prompt.md` markers, the `.gitignore` coverage. If anything fails, fix it first — do not ask the user to start pasting their career into a broken install.
+By the time you're reading this file, the template has already been scaffolded onto the user's machine (either you just created the repo from github.com/agamarora/ai-resume via `gh repo create --template`, or the files were already there). Do NOT ask the user to `git clone` or `fork` anything. The words "clone" and "fork" should not appear in anything you say to them.
 
-Also: warn the user if their repo path contains spaces (Windows + Git Bash does not love them). And run `npm install` if `node_modules/` is absent.
+Run `npm install` if `node_modules/` is missing. Then run `npm run doctor`. It checks Node ≥ 18, the `.env`, `setup-config.json`, the `system-prompt.md` markers, the `.gitignore` coverage. Fix anything it flags before asking the user to start pasting their career.
+
+Warn once if the repo path contains spaces (Windows + Git Bash does not love them).
 
 ### Step 1 — Resume (draft → critique → refine, max 3 passes)
 

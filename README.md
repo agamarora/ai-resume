@@ -17,15 +17,18 @@ Open Claude Code. Paste this one prompt:
 <!-- BEGIN:PASTE_PROMPT -->
 
 ```text
-I want to build my own AI resume page using the ai-resume template at github.com/agamarora/ai-resume.
+I want my own AI resume page. Use the template at github.com/agamarora/ai-resume.
 
-Please do the following, in order:
-1. Read the repo's CLAUDE.md. It's a setup wizard for this template — follow it.
-2. Walk me through step 1 (resume) first. Ask me about my career. Push hard for quantified impacts (numbers, percentages, outcomes). Critique vague bullets before moving on.
-3. Then step 2 (AI personality), step 3 (API key — I have a Groq key ready), step 4 (highlights), step 5 (config), step 6 (eval-in-a-loop — keep tuning the prompt until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds).
-4. Then deploy to Netlify.
+Do everything for me:
 
-I'm on my machine, in the cloned template folder. Node 18+, git bash available. Ask before you do anything destructive.
+1. Create a new GitHub repo for me from that template (use `gh repo create --template agamarora/ai-resume --public <repo-name>`). Pick a sensible default name from my GitHub username or ask me one question if you need to.
+2. Scaffold it locally in ~/ai-resume (or wherever I already am if it makes sense).
+3. Read the repo's CLAUDE.md. It's the setup wizard — follow it start to finish.
+4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds.
+5. Deploy to Netlify. Set the GROQ_API_KEY env var in the Netlify dashboard too.
+6. Give me the live URL at the end.
+
+I'll answer your questions. Ask before anything destructive. I'm on a laptop with Node 18+, gh CLI, and git installed.
 ```
 
 <!-- END:PASTE_PROMPT -->
