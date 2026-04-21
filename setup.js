@@ -189,7 +189,18 @@ function generateManifestJson(config, palette) {
   };
 }
 
-const DEMO_PROMPT_TEXT = `I want to make a personal AI resume page using the ai-resume template at github.com/agamarora/ai-resume. Walk me through setup — ask about my career, generate the config files, help me deploy to Netlify. Push hard for quantified metrics (numbers, percentages, outcomes).`;
+const DEMO_PROMPT_TEXT = `I want my own AI resume page. Use the template at github.com/agamarora/ai-resume.
+
+Do everything for me:
+
+1. Create a new GitHub repo from that template (gh repo create --template agamarora/ai-resume --public <repo-name> --clone). Pick a sensible name from my GitHub username or ask me one question if you need to.
+2. Scaffold it locally.
+3. Read the repo's CLAUDE.md — it's the setup wizard. Follow it start to finish.
+4. Walk me through it conversationally: resume (draft → critique → refine, push hard for metrics), Groq API key, highlights with numbers, config. Run setup.js, then the eval-in-a-loop until all 12 tests pass on both cascade models or 3 no-improvement rounds.
+5. Deploy to Netlify. Set GROQ_API_KEY in Netlify env vars too.
+6. Give me the live URL.
+
+I'll answer your questions. Ask before anything destructive. I'm on a laptop with Node 18+, gh CLI, and git installed.`;
 
 const DEMO_BANNER_CSS = `
     /* Demo banner + header CTA + modal — only injected when demo_mode=true */

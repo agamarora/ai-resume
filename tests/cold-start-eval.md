@@ -88,7 +88,7 @@ paste_prompt (this is exactly what John types): |
   1. Create a new GitHub repo for me from that template (use `gh repo create --template agamarora/ai-resume --public <repo-name>`). Pick a sensible default name from my GitHub username or ask me one question if you need to.
   2. Scaffold it locally in ~/ai-resume (or wherever I already am if it makes sense).
   3. Read the repo's CLAUDE.md. It's the setup wizard — follow it start to finish.
-  4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds.
+  4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on both cascade models or we hit 3 no-improvement rounds.
   5. Deploy to Netlify. Set the GROQ_API_KEY env var in the Netlify dashboard too.
   6. Give me the live URL at the end.
 
@@ -164,11 +164,11 @@ S07  wizard_step5_config_and_setup                          max: 10
   observables: setup_output_verbatim, check_models_result
 
 S08  wizard_step6_eval_loop                                 max: 20
-  action: Wizard runs `npm run eval -- --all-models`. Reads failures. Proposes edits to system-prompt.md. Re-runs. Loops up to 8 iterations OR until 12/12 on all 4 models OR 3 consecutive no-improvement rounds.
+  action: Wizard runs `npm run eval -- --all-models`. Reads failures. Proposes edits to system-prompt.md. Re-runs. Loops up to 8 iterations OR until 12/12 on both models OR 3 consecutive no-improvement rounds.
   pass_criteria:
     - Loop runs at least 1 iteration
     - best_prompt_*.md snapshot file exists (the "best so far" logic is real, not dead code)
-    - Final pass rate ≥ 10/12 on at least 2 of 4 models
+    - Final pass rate ≥ 10/12 on both models
     - Total Groq requests < 300 (safety ceiling)
     - Loop terminates cleanly (doesn't hang, doesn't oscillate forever)
   observables_REQUIRED (log all):
@@ -234,7 +234,7 @@ Block A — JSON (machine-parseable, exactly this schema):
   "coaching_loop": {
     "iterations": N,
     "converged": true,
-    "final_scores_per_model": { "llama-3.1-8b-instant": "N/12", "qwen/qwen3-32b": "N/12", "openai/gpt-oss-20b": "N/12", "llama-3.3-70b-versatile": "N/12" },
+    "final_scores_per_model": { "llama-3.1-8b-instant": "N/12", "llama-3.3-70b-versatile": "N/12" },
     "best_so_far_reverted_anything": true,
     "total_groq_requests": N
   },

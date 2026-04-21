@@ -32,8 +32,6 @@ try {
 
 const PROD_MODELS = [
   "llama-3.1-8b-instant",
-  "qwen/qwen3-32b",
-  "openai/gpt-oss-20b",
   "llama-3.3-70b-versatile",
 ];
 
@@ -182,11 +180,10 @@ async function callModel(model, messages) {
         model,
         max_completion_tokens: 100,
         temperature: 0.7,
-        reasoning_format: "parsed",
         messages,
       });
       const msg = response.choices[0]?.message || {};
-      const text = (msg.content && msg.content.trim()) || msg.reasoning || "";
+      const text = (msg.content && msg.content.trim()) || "";
       return { ok: true, text };
     } catch (err) {
       const status = err?.status || err?.response?.status;

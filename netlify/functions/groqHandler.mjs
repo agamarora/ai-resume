@@ -30,8 +30,6 @@ const MAX_COMPLETION_TOKENS = 100;
 
 const MODELS = [
   "llama-3.1-8b-instant",
-  "qwen/qwen3-32b",
-  "openai/gpt-oss-20b",
   "llama-3.3-70b-versatile",
 ];
 
@@ -162,19 +160,8 @@ export default async function handler(req) {
     const readable = new ReadableStream({
       async start(controller) {
         try {
-          let inThinkBlock = false;
           for await (const chunk of stream) {
-            let content = chunk.choices[0]?.delta?.content || "";
-            // Strip <think>...</think> blocks (qwen model leaks reasoning)
-            if (content.includes("<think>")) inThinkBlock = true;
-            if (inThinkBlock) {
-              if (content.includes("</think>")) {
-                content = content.split("</think>").pop();
-                inThinkBlock = false;
-              } else {
-                continue;
-              }
-            }
+            const content = chunk.choices[0]?.delta?.content || "";
             if (content) {
               controller.enqueue(
                 new TextEncoder().encode(`data: ${JSON.stringify({ text: content })}\n\n`)

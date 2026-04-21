@@ -21,7 +21,7 @@ Personal AI agent page for job seekers. Chat-first landing page where recruiters
 | Inline `[CARD: title \| metric]` parser (AI emits markers mid-stream, client re-renders turn as alternating bubbles + cards at stream end) | ✅ |
 | `setup.js` (atomic multi-output: welcome cards HTML, FULL_HIGHLIGHTS_MARKDOWN injected into system-prompt.md, connect icons, JSON-LD block, smart OG description, `ai-resume.json`, `manifest.json`, placeholder validation) | ✅ |
 | `netlify.toml` with `/.well-known/ai-resume.json` redirect | ✅ |
-| `groqHandler.mjs` (CORS + Samsung Internet empty-Origin, 4-model cascade on BadRequest/NotFound/RateLimit/Timeout, injection filter, think-block stripping, SSE streaming) | ✅ |
+| `groqHandler.mjs` (CORS + Samsung Internet empty-Origin, 2-model Llama cascade on BadRequest/NotFound/RateLimit/Timeout, injection filter, SSE streaming) | ✅ |
 | `system-prompt.md` with card-usage rules + `{{FULL_HIGHLIGHTS_MARKDOWN}}` injection | ✅ |
 | `eval-prompt.mjs` with 12 behavioral tests including CARDS-LIST and CARDS-NARRATIVE | ✅ |
 | Generated artifacts (`ai-resume.json`, `manifest.json`) — checked into git; setup.js regenerates on config change | ✅ |
@@ -91,7 +91,7 @@ resume.md ──[Any AI assistant]──→ system-prompt.md
 ```
 
 - **index.html** — Single-file chat UI. Inline CSS/JS. Zero deps. Mobile-first. Linear design.
-- **groqHandler.mjs** — Netlify function. Reads system-prompt.md, streams via Groq. 4-model cascade on rate limit.
+- **groqHandler.mjs** — Netlify function. Reads system-prompt.md, streams via Groq. 2-model Llama cascade on rate limit.
 - **setup.js** — Multi-output generator: cards HTML, JSON-LD, PWA manifest, OG tags, agent endpoint. Atomic writes.
 - **palettes.js** — 4 palettes + custom. WCAG AA contrast validation.
 - **eval-prompt.mjs** — 12 behavioral tests (greeting, identity, hire signal, injection, follow-up, cards-list, cards-narrative).
@@ -167,7 +167,7 @@ npm run setup          # hydrate index.html + groqHandler.mjs from templates/, s
 
 ### Step 6 — Eval in a loop (THE differentiator — make it visible)
 
-Run `npm run eval -- --all-models`. All 4 cascade models. All 12 fixed tests. Plus any custom tests from `eval-custom.json` if you wrote one in step 6.5.
+Run `npm run eval -- --all-models`. Both cascade models. All 12 fixed tests. Plus any custom tests from `eval-custom.json` if you wrote one in step 6.5.
 
 If any fail:
 1. Snapshot the current `system-prompt.md` to `.best-prompt-<timestamp>.md` (gitignored).
@@ -177,7 +177,7 @@ If any fail:
 5. If it went down or stayed the same: revert from the latest snapshot, try a different edit.
 6. Loop up to 8 iterations. Show the user the iteration count and per-category delta every time. This is the demo.
 
-Stop when: (a) 12/12 on all 4 models + any custom tests green, (b) 3 consecutive no-improvement passes (revert to best-so-far, report ceiling), or (c) user types "ship."
+Stop when: (a) 12/12 on both models + any custom tests green, (b) 3 consecutive no-improvement passes (revert to best-so-far, report ceiling), or (c) user types "ship."
 
 When you stop, delete all `.best-prompt-*.md` except the best, which becomes `system-prompt.md`.
 

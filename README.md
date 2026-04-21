@@ -24,7 +24,7 @@ Do everything for me:
 1. Create a new GitHub repo for me from that template (use `gh repo create --template agamarora/ai-resume --public <repo-name>`). Pick a sensible default name from my GitHub username or ask me one question if you need to.
 2. Scaffold it locally in ~/ai-resume (or wherever I already am if it makes sense).
 3. Read the repo's CLAUDE.md. It's the setup wizard — follow it start to finish.
-4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on all 4 cascade models or we hit 3 no-improvement rounds.
+4. Walk me through it conversationally: resume (draft → critique → refine), API key (I have a Groq key ready), highlights with metrics, config. Then run setup.js, run the eval-in-a-loop until all 12 tests pass on both cascade models or we hit 3 no-improvement rounds.
 5. Deploy to Netlify. Set the GROQ_API_KEY env var in the Netlify dashboard too.
 6. Give me the live URL at the end.
 
@@ -33,7 +33,7 @@ I'll answer your questions. Ask before anything destructive. I'm on a laptop wit
 
 <!-- END:PASTE_PROMPT -->
 
-Claude Code reads the repo's `CLAUDE.md`, becomes the setup wizard, and walks you through: your career → AI personality → a behavioral eval loop (12 tests × 4 models, coached until they pass) → Netlify deploy. ~30 minutes end-to-end. $0/month to run (Groq free tier + Netlify free tier).
+Claude Code reads the repo's `CLAUDE.md`, becomes the setup wizard, and walks you through: your career → AI personality → a behavioral eval loop (12 tests × 2 models, coached until they pass) → Netlify deploy. ~30 minutes end-to-end. $0/month to run (Groq free tier + Netlify free tier).
 
 **No Claude Code?** See [`SETUP-GUIDE.md`](SETUP-GUIDE.md) for the same flow on ChatGPT / Claude Desktop / Copilot / Gemini / manual. ~45 minutes.
 
@@ -92,14 +92,14 @@ resume.md ──[Claude Code wizard]──→ system-prompt.md
                                  → setup.js → index.html (chat + cards + JSON-LD)
                                             → ai-resume.json (agent endpoint)
                                             → manifest.json (PWA)
-                                 → eval-prompt.mjs (12 tests × 4 models, +eval-custom.json)
+                                 → eval-prompt.mjs (12 tests × 2 models, +eval-custom.json)
                                  → .github/workflows/eval.yml (CI on PR)
 ```
 
 - **index.html** — Single-file chat UI. Zero deps. Mobile-first. Welcome cards, inline `[CARD:...]` parser for conversation cards, streaming SSE, skeleton loading, PWA.
-- **groqHandler.mjs** — Netlify function. 4-model cascade on rate limit, injection filter, SSE streaming, CORS.
+- **groqHandler.mjs** — Netlify function. 2-model Llama cascade on rate limit, injection filter, SSE streaming, CORS.
 - **setup.js** — Config-driven multi-file generator. Welcome cards HTML, JSON-LD, PWA manifest, OG tags, agent endpoint. HARD ERROR on missing FULL_HIGHLIGHTS markers. Atomic writes.
-- **eval-prompt.mjs** — 12 behavioral tests × 4 models, with custom tests from `eval-custom.json` if present. Exponential backoff on 429s. `--all-models`, `--model=`, `--custom-only` flags.
+- **eval-prompt.mjs** — 12 behavioral tests × 2 models, with custom tests from `eval-custom.json` if present. Exponential backoff on 429s. `--all-models`, `--model=`, `--custom-only` flags.
 - **scripts/check-models.mjs** — Fails fast if Groq deprecated any cascade model.
 - **scripts/doctor.mjs** — One-command install health: Node version, `.env` key format, config validity, marker integrity, PII scan on `resume.md`.
 - **ai-resume.json** — Schema.org Person endpoint for agent-to-agent communication.
@@ -127,7 +127,7 @@ resume.md ──[Claude Code wizard]──→ system-prompt.md
 ## Tech
 
 - **Frontend:** Vanilla HTML/CSS/JS. Zero framework, zero build step.
-- **AI:** Groq free tier (Llama + Qwen + GPT-OSS models, 4-model cascade on rate limit)
+- **AI:** Groq free tier (2 Llama models — `llama-3.1-8b-instant` primary, `llama-3.3-70b-versatile` fallback on rate limit)
 - **Hosting:** Netlify free tier (static + one serverless function)
 - **CI:** GitHub Actions running the 12-test eval on every PR
 - **Cost:** $0/month to run
