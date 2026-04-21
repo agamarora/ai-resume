@@ -45,8 +45,11 @@ const AGENT_MODELS = [
   { id: "llama-3.3-70b-versatile", tier: "smart" },
 ];
 
-// Judge model — needs to be strong enough to grade reliably
-const JUDGE_MODEL = "llama-3.3-70b-versatile";
+// Judge model — Llama 8B. It's our floor model, so using it as judge has a
+// nice property: if the paste prompt is so weak that even the 8B judge can't
+// detect missing rubric items, the prompt is definitely not resilient. Also
+// gets us off the 70B TPM bucket.
+const JUDGE_MODEL = "llama-3.1-8b-instant";
 
 const args = process.argv.slice(2);
 const variantFilter = args.includes("--variant") ? args[args.indexOf("--variant") + 1] : null;
@@ -265,7 +268,7 @@ function summarize(runs) {
   for (const r of RUBRIC) {
     const cols = [`${r.id} ${r.name}`];
     for (const v of variants) {
-      const vRuns = runs.filter(run => run.variantName === v && run.tally);
+      const vRuns = runs.filter(run => run.variantName === v && run.tally && run.tally.byItem[r.id]);
       if (!vRuns.length) { cols.push("-"); continue; }
       const avg = vRuns.reduce((s, run) => s + run.tally.byItem[r.id].score, 0) / vRuns.length;
       cols.push(avg.toFixed(2));
@@ -277,10 +280,13 @@ function summarize(runs) {
     md += `### ${v}\n`;
     const vRuns = runs.filter(run => run.variantName === v && run.tally);
     if (!vRuns.length) { md += `(no runs)\n\n`; continue; }
-    const itemAvgs = RUBRIC.map(r => ({
-      id: r.id, name: r.name,
-      avg: vRuns.reduce((s, run) => s + run.tally.byItem[r.id].score, 0) / vRuns.length,
-    })).sort((a, b) => a.avg - b.avg).slice(0, 3);
+    const itemAvgs = RUBRIC.map(rubric => {
+      const scored = vRuns.filter(run => run.tally.byItem[rubric.id]);
+      return {
+        id: rubric.id, name: rubric.name,
+        avg: scored.length ? scored.reduce((s, run) => s + run.tally.byItem[rubric.id].score, 0) / scored.length : 0,
+      };
+    }).sort((a, b) => a.avg - b.avg).slice(0, 3);
     for (const it of itemAvgs) md += `- ${it.id} ${it.name}: ${it.avg.toFixed(2)}/2\n`;
     md += `\n`;
   }
