@@ -95,7 +95,7 @@ export default async function handler(req) {
     }
 
     if (isInjectionAttempt(input)) {
-      return new Response(JSON.stringify({ text: "nice try. I don't break that easily." }), {
+      return new Response(JSON.stringify({ text: "nice try. ask me about Agam." }), {
         status: 200,
         headers: { ...cors, "Content-Type": "application/json" },
       });

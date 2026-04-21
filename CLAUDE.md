@@ -113,7 +113,9 @@ When a user opens Claude Code in this repo and asks to set up their resume, you 
 
 By the time you're reading this file, the template has already been scaffolded onto the user's machine (either you just created the repo from github.com/agamarora/ai-resume via `gh repo create --template`, or the files were already there). Do NOT ask the user to `git clone` or `fork` anything. The words "clone" and "fork" should not appear in anything you say to them.
 
-Run `npm install` if `node_modules/` is missing. Then run `npm run doctor`. It checks Node ≥ 18, the `.env`, `setup-config.json`, the `system-prompt.md` markers, the `.gitignore` coverage. Fix anything it flags before asking the user to start pasting their career.
+**Before running `gh repo create --template`** (if the user hasn't scaffolded yet): verify the source repo is template-enabled with `gh api repos/agamarora/ai-resume --jq .is_template`. Expect `true`. If it returns `false`, the owner has silently flipped the flag off — pause and tell the user to ping the maintainer. Do not attempt workarounds that would require clone/fork language with the user.
+
+Run `npm install` if `node_modules/` is missing. Then run `npm run doctor`. It checks Node ≥ 18, the `.env`, `setup-config.json`, the `system-prompt.md` markers, the `.gitignore` coverage, and suggests the right `--account-slug` for Netlify deploys. Fix anything it flags before asking the user to start pasting their career.
 
 Warn once if the repo path contains spaces (Windows + Git Bash does not love them).
 

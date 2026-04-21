@@ -7,11 +7,25 @@ function row(name, status, detail) { rows.push({ name, status, detail }); }
 const nodeMajor = Number(process.versions.node.split(".")[0]);
 row("Node >= 18", nodeMajor >= 18 ? "OK" : "FAIL", `found ${process.versions.node}`);
 
+let netlifyInstalled = false;
 try {
   const netlifyVer = execSync("netlify --version", { stdio: ["ignore", "pipe", "ignore"], encoding: "utf8" }).trim();
   row("netlify CLI", "OK", netlifyVer);
+  netlifyInstalled = true;
 } catch {
   row("netlify CLI", "WARN", "not installed — run `npm install -g netlify-cli` when deploying");
+}
+
+if (netlifyInstalled) {
+  try {
+    const raw = execSync("netlify api listAccountsForUser", { stdio: ["ignore", "pipe", "pipe"], encoding: "utf8", timeout: 15000 });
+    const accounts = JSON.parse(raw);
+    const slug = accounts?.[0]?.slug;
+    if (slug) row("netlify account slug", "OK", `${slug} (use with: netlify sites:create --account-slug ${slug})`);
+    else row("netlify account slug", "WARN", "no accounts returned — run `netlify login`");
+  } catch {
+    row("netlify account slug", "WARN", "could not detect — run `netlify login` if deploying");
+  }
 }
 
 if (existsSync(".env")) {
@@ -74,7 +88,10 @@ if (existsSync("resume.md")) {
 try {
   const gi = readFileSync(".gitignore", "utf8");
   const required = ["resume.md", "setup-config.json", ".env"];
-  const missing = required.filter((x) => !gi.split(/\r?\n/).includes(x));
+  const lines = gi.split(/\r?\n/)
+    .map((l) => l.replace(/#.*$/, "").trim().replace(/^\//, "").replace(/\/$/, ""))
+    .filter(Boolean);
+  const missing = required.filter((x) => !lines.includes(x));
   if (missing.length) row(".gitignore coverage", "FAIL", `should list: ${missing.join(", ")}`);
   else row(".gitignore coverage", "OK", "resume.md + setup-config.json + .env ignored");
 } catch {

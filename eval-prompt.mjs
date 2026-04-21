@@ -42,6 +42,7 @@ const modelArg = args.find((a) => a.startsWith("--model="));
 const onlyModel = modelArg ? modelArg.split("=")[1] : null;
 const customOnly = args.includes("--custom-only");
 const allModels = args.includes("--all-models");
+const summaryMode = args.includes("--summary");
 const MODELS_TO_RUN = onlyModel
   ? [onlyModel]
   : allModels
@@ -181,9 +182,12 @@ async function callModel(model, messages) {
         model,
         max_completion_tokens: 100,
         temperature: 0.7,
+        reasoning_format: "parsed",
         messages,
       });
-      return { ok: true, text: response.choices[0]?.message?.content || "" };
+      const msg = response.choices[0]?.message || {};
+      const text = (msg.content && msg.content.trim()) || msg.reasoning || "";
+      return { ok: true, text };
     } catch (err) {
       const status = err?.status || err?.response?.status;
       if (status === 429 && attempt < backoff.length - 1) continue;
@@ -230,11 +234,15 @@ for (const model of MODELS_TO_RUN) {
     const result = evaluate(text, tc);
     const tag = tc.isCustom ? "[custom] " : "";
     if (result.pass) {
-      console.log(`  ✓ ${tag}${tc.category}: "${tc.input}" → "${text}" (${result.words} words)`);
+      if (!summaryMode) console.log(`  ✓ ${tag}${tc.category}: "${tc.input}" → "${text}" (${result.words} words)`);
       passed++;
     } else {
-      console.log(`  ✗ ${tag}${tc.category}: "${tc.input}" → "${text}"`);
-      result.issues.forEach((issue) => console.log(`    ↳ ${issue}`));
+      if (summaryMode) {
+        console.log(`  ✗ ${tag}${tc.category}: "${tc.input}" → ${result.issues[0] || "FAIL"}`);
+      } else {
+        console.log(`  ✗ ${tag}${tc.category}: "${tc.input}" → "${text}"`);
+        result.issues.forEach((issue) => console.log(`    ↳ ${issue}`));
+      }
       suggestions.push({ model, category: tc.category, issues: result.issues });
     }
   }
