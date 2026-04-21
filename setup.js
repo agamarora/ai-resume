@@ -641,8 +641,10 @@ try {
   writeFileSync("ai-resume.json", JSON.stringify(aiResumeJson, null, 2), "utf8");
   writeFileSync("manifest.json", JSON.stringify(manifestJson, null, 2), "utf8");
 
-  // 12. Refresh full_highlights list inside system-prompt.md between markers.
-  // The file itself is wizard-generated per user; we only own the list block.
+  // 12. Sync full_highlights list inside system-prompt.md between markers.
+  // The file is wizard-generated per user; we only own the list block. If the
+  // markers are missing, that is a HARD ERROR — the wizard regenerated the
+  // prompt without them and future runs will silently drift.
   let promptUpdated = false;
   if (existsSync("system-prompt.md")) {
     const prompt = readFileSync("system-prompt.md", "utf8");
@@ -652,9 +654,45 @@ try {
       writeFileSync("system-prompt.md", prompt.replace(markerRe, block), "utf8");
       promptUpdated = true;
     } else {
-      console.warn("⚠ system-prompt.md has no <!-- BEGIN:FULL_HIGHLIGHTS --> markers — full_highlights list not refreshed.");
-      console.warn("  Add markers around the bulleted list so `node setup.js` can keep it in sync with setup-config.json.");
+      throw new Error(
+        "system-prompt.md has no <!-- BEGIN:FULL_HIGHLIGHTS --> ... <!-- END:FULL_HIGHLIGHTS --> markers. " +
+        "setup.js cannot sync the full_highlights list without them. " +
+        "Re-generate system-prompt.md from templates/system-prompt.md (which has the markers in the right place) " +
+        "or add the markers manually around the bulleted list."
+      );
     }
+  } else if (existsSync("templates/system-prompt.md")) {
+    // First run: no system-prompt.md yet. The wizard usually writes this,
+    // but if it hasn't, stamp out the template with generic placeholders
+    // so the file always exists after a successful setup. The wizard can
+    // still overwrite it with a richer persona on the next pass.
+    const tpl = readFileSync("templates/system-prompt.md", "utf8");
+    const firstName = name.split(/\s+/)[0];
+    const pron = (config.pronoun || "he").toLowerCase();
+    const poss = pron === "she" ? "her" : pron === "they" ? "their" : "his";
+    const voiceExamples = [
+      `- "hi" → "hey. ask me about ${firstName}."`,
+      `- "what has ${pron} shipped?" → pick two quantified impacts from the highlights, separate with a period.`,
+      `- "why did ${pron} leave X?" → one sentence, a reason grounded in the resume, no hedging.`,
+    ].join("\n");
+    const safe = (s) => String(s || "").replace(/["`\\]/g, "").replace(/\s+/g, " ").trim();
+    const whyHire = (resume.welcome_highlights?.[0])
+      ? `${firstName} shipped ${safe(resume.welcome_highlights[0].title).toLowerCase()} — ${safe(resume.welcome_highlights[0].metric)}. that's the pattern.`
+      : `${firstName} ships quantified outcomes. ask about the highlights.`;
+    const factsLines = (resume.welcome_highlights || []).map((h) => `- ${h.title}: ${h.metric}${h.timeframe ? ` (${h.timeframe})` : ""}.`).join("\n");
+    const hydrated = tpl
+      .replace(/\{\{NAME\}\}/g, name)
+      .replace(/\{\{NAME_FIRST\}\}/g, firstName)
+      .replace(/\{\{PRONOUN\}\}/g, pron)
+      .replace(/\{\{POSS\}\}/g, poss)
+      .replace(/\{\{FULL_HIGHLIGHTS_MARKDOWN\}\}/g, fullHighlightsMd)
+      .replace(/\{\{VOICE_EXAMPLES\}\}/g, voiceExamples)
+      .replace(/\{\{WHY_HIRE_EXAMPLE\}\}/g, whyHire)
+      .replace(/\{\{FACTS\}\}/g, factsLines || "- see highlights below");
+    writeFileSync("system-prompt.md", hydrated, "utf8");
+    promptUpdated = true;
+  } else {
+    console.warn("⚠ No system-prompt.md and no templates/system-prompt.md — wizard must write system-prompt.md before the site works.");
   }
 
   const whCount = resume.welcome_highlights?.length || 0;

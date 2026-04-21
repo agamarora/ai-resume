@@ -3,7 +3,11 @@ node_modules/
 .netlify/
 .DS_Store
 .gstack-screenshots/
-setup-config.json
+/setup-config.json
+/resume.md
+/eval-custom.json
+/.best-prompt-*.md
 .gstack/
 .claude/
 .design-preview.html
+.context/retros/
