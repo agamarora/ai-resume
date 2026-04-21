@@ -1,0 +1,38 @@
+name: eval
+on:
+  pull_request:
+    paths-ignore:
+      - "README.md"
+      - "SETUP-GUIDE.md"
+      - "LICENSE"
+      - ".github/**"
+      - "!.github/workflows/eval.yml"
+  push:
+    branches: [main]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: write .env from secret
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then
+            echo "GROQ_API_KEY secret not set — skipping eval." >&2
+            exit 0
+          fi
+          printf "GROQ_API_KEY=%s\n" "$GROQ_API_KEY" > .env
+      - name: check-models
+        if: env.GROQ_API_KEY != ''
+        run: npm run check-models
+      - name: eval (all models)
+        if: env.GROQ_API_KEY != ''
+        run: npm run eval -- --all-models

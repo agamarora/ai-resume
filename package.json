@@ -1,13 +1,19 @@
 {
   "name": "ai-resume",
-  "version": "1.0.0",
-  "description": "AI-powered interactive resume. Clone, run Claude Code, deploy.",
+  "version": "1.1.0",
+  "description": "AI-powered interactive resume. Paste one prompt into Claude Code, deploy in 30 minutes.",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "setup": "node setup.js",
-    "eval": "node eval-prompt.mjs"
+    "eval": "node eval-prompt.mjs",
+    "check-models": "node scripts/check-models.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "sync-readme": "node scripts/sync-readme-prompt.mjs"
   },
   "dependencies": {
-    "groq-sdk": "^1.1.2"
+    "groq-sdk": "~1.1.2"
   }
 }
