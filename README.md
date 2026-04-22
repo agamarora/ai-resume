@@ -1,12 +1,17 @@
 # ai-resume
 
-**Recruiters judge you in 6 seconds from a static resume.** You worked for 10 years. They read 3 bullets. They bounce.
+**Your next recruiter is an AI. Your resume should be too.**
 
-ai-resume replaces your resume with a chat. A recruiter clicks the link and sees three proof cards — your strongest quantified impacts. They ask questions. An AI that knows your career answers in your voice, quotes your metrics, and shows the next proof cards inline when they ask "what else?" They're in a conversation instead of scanning a PDF.
+Greenhouse, Ashby, LinkedIn Recruiter, Workday — the first reader of your resume is almost never a human anymore. It's an agent doing a keyword sweep on a PDF and deciding whether you're worth a human's eyes. A PDF is a dead artifact. It can't answer a follow-up, prove a claim, or hold a conversation.
 
-Recruiter AI agents can also query `/.well-known/ai-resume.json` for structured Schema.org data. Humans AND machines can read your career.
+**ai-resume is a resume for the agent-to-agent web.** One live surface, two audiences:
 
-**[See a live example →](https://ai-resume-demo.netlify.app)**
+- **Hiring AI agent** → hits `/.well-known/ai-resume.json` for structured Schema.org career data, or streams the chat endpoint directly. Agent-to-agent, no keyword lottery. Your claims are machine-queryable.
+- **Human recruiter** → lands on a chat with proof cards. Taps a card, asks a question, gets your metrics in your voice, sees more cards inline when they ask "what else?" They're in a conversation instead of scanning a doc.
+
+Same career. Both readers served. Replaces the PDF, not the LinkedIn.
+
+**[See it live →](https://ai-resume-demo.netlify.app)** · `curl https://ai-resume-demo.netlify.app/.well-known/ai-resume.json`
 
 ![eval](https://github.com/agamarora/ai-resume/actions/workflows/eval.yml/badge.svg)
 

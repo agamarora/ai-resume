@@ -53,7 +53,10 @@ node setup.js                   # re-apply setup-config.json to templates (from 
 
 ## What we're building
 
-A recruiter clicks a link and sees proof cards (quantified career highlights) as the AI's opening message. They're already in a conversation. Each card has "Ask about this" and "Connect" CTAs. The chat IS the landing page — no separate landing vs chat mode.
+**A resume for the agent-to-agent web.** The first reader of a resume is almost always an AI now (ATS, LinkedIn Recruiter, autonomous sourcing agents). A PDF is a dead artifact to them. ai-resume is one live surface with two readers:
+
+- **Hiring AI agent** → `/.well-known/ai-resume.json` for structured Schema.org career data, or streams the `/groqHandler` chat endpoint for Q&A. Agent-to-agent, no keyword lottery.
+- **Human recruiter** → lands on a chat with proof cards (quantified career highlights) as the AI's opening. They tap a card, ask a question, see more cards inline when they ask "what else?" The chat IS the landing page — no separate landing vs chat mode.
 
 **Key design decisions (all in spec.md):**
 - Linear-inspired design system: Inter font, 8px grid, 6px tight radius, 150ms transitions

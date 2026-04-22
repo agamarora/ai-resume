@@ -18,12 +18,12 @@ v1 core landed. Runs end-to-end via `netlify dev` at `localhost:8888`. See CLAUD
 
 ## Vision
 
-Every job seeker gets a personal AI agent page. Paste your resume, get a live site where visitors chat with an AI that knows your career. Proof cards show impact at a glance. A machine-readable endpoint lets recruiter AI agents query you. Setup takes minutes with any AI assistant.
+**A resume for the agent-to-agent web.** The first reader of a resume is almost always an AI now — ATS screeners, LinkedIn Recruiter AI, autonomous sourcing agents. A PDF is a dead artifact to them. ai-resume replaces the PDF with a live AI agent that represents a career: one source of truth, two surfaces (chat for humans, structured endpoint + chat API for machines). Setup takes minutes with any AI assistant.
 
-**Three audiences:**
-- **Job seeker**: paste resume → live AI agent page in minutes
-- **Human recruiter**: click link → see proof cards → ask questions → connect
-- **Recruiter AI agent**: query `/.well-known/ai-resume.json` → structured career data
+**Three audiences, in order of product priority:**
+- **Hiring AI agent**: query `/.well-known/ai-resume.json` for Schema.org career data, or stream the chat endpoint for Q&A. Agent-to-agent, no keyword lottery.
+- **Human recruiter**: click link → see proof cards → ask questions → connect. The chat IS the landing page.
+- **Job seeker**: paste resume → live AI agent page in minutes, coached by any AI assistant.
 
 ---
 
